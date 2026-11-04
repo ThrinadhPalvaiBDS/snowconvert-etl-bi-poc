@@ -38,7 +38,7 @@ sales_dw:
     prod:
       type: snowflake
       account: "{{ env_var('SNOWFLAKE_ACCOUNT', 'placeholder') }}"
-      user: "{{ env_var('SNOWFLAKE_USER', 'SVC_DBT_DEPLOY') }}"
+      user: "{{ env_var('SNOWFLAKE_USER', 'SVC_POC_PIPELINE') }}"
       private_key_path: "{{ env_var('SNOWFLAKE_PRIVATE_KEY_PATH', '') }}"
       role: TRANSFORMER
       warehouse: WH_TRANSFORM
