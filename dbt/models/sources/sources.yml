@@ -2,7 +2,7 @@ version: 2
 sources:
   - name: raw
     description: Landed copies of SalesOLTP (SSIS OLE DB Sources), append-only with load metadata.
-    database: "{{ 'SALES_DW_PROD' if target.name == 'prod' else target.database }}"
+    database: "{{ target.database if target.name == 'cortex' else 'SALES_DW_PROD' }}"
     schema: "{{ target.schema if target.name == 'cortex' else 'RAW' }}"
     loaded_at_field: _LOADED_AT
     freshness:
