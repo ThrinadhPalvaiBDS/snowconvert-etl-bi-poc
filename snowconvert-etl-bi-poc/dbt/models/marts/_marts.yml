@@ -1,0 +1,39 @@
+version: 2
+models:
+  - name: dim_customer
+    description: SCD2 customer dimension (replaces SSIS SCD wizard).
+    columns:
+      - name: customer_key
+        data_tests: [unique, not_null]
+      - name: email
+        description: PII - masked via tag-based masking policy.
+    data_tests:
+      - dbt_utils.unique_combination_of_columns:
+          combination_of_columns: [customer_id, valid_from]
+  - name: dim_product
+    columns:
+      - name: product_key
+        data_tests: [unique, not_null]
+  - name: dim_date
+    columns:
+      - name: date_key
+        data_tests: [unique, not_null]
+  - name: fct_sales
+    description: Order-line grain sales fact.
+    config:
+      contract: {enforced: false}
+    columns:
+      - name: sales_order_detail_id
+        data_tests: [unique, not_null]
+      - name: customer_key
+        data_tests:
+          - relationships: {to: ref('dim_customer'), field: customer_key}
+      - name: product_key
+        data_tests:
+          - relationships: {to: ref('dim_product'), field: product_key}
+      - name: order_date_key
+        data_tests:
+          - relationships: {to: ref('dim_date'), field: date_key}
+      - name: sales_amount
+        data_tests:
+          - dbt_utils.accepted_range: {min_value: 0}

@@ -1,0 +1,29 @@
+snowflake_database: CORTEX_AI
+mssql_database_env: MSSQL_DW_DB
+amount_tolerance: 0.01
+checks:
+  - name: FactSales
+    legacy: dbo.FactSales
+    snowflake: DATA.FACTSALES
+    key: SalesOrderDetailID
+    measures: [Quantity, SalesAmount, DiscountAmount, CostAmount, MarginAmount]
+    group_by: [Channel, OrderStatus]
+    hash_columns: [OrderNumber, Channel, OrderStatus, Quantity, SalesAmount]
+    known_difference_note: "Customer lookup misses are loaded as unknown member (-1) instead of rejected"
+  - name: DimProduct
+    legacy: dbo.DimProduct
+    snowflake: DATA.DIMPRODUCT
+    key: ProductID
+    measures: [ListPrice, StandardCost]
+    group_by: [Category]
+    hash_columns: [SKU, ProductName, Category, SubCategory, ListPrice]
+    filter_snowflake: "PRODUCTID <> -1"
+  - name: DimCustomerCurrent
+    legacy: dbo.DimCustomer
+    snowflake: DATA.DIMCUSTOMER
+    key: CustomerID
+    measures: []
+    group_by: [Region, Segment]
+    hash_columns: [CustomerCode, CustomerName, City, Country, Region, Segment]
+    filter_legacy: "IsCurrent = 1"
+    filter_snowflake: "ISCURRENT AND CUSTOMERID <> -1"

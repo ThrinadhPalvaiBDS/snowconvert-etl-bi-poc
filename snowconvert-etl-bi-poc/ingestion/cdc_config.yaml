@@ -1,0 +1,14 @@
+target_database: SALES_DW_PROD
+target_schema: RAW
+role: LOADER
+warehouse: WH_LOAD
+batch_size: 100000
+# Run the Snowflake DAG after a load that brought changes (needs OPERATE on the task)
+trigger_task: SALES_DW_PROD.AUDIT.T_ROOT_SALES_DW
+# If the checkpoint falls behind SQL Server's CDC retention, re-snapshot that table automatically
+auto_resnapshot_on_gap: true
+tables:
+  - {source: dbo.Customer,         capture_instance: dbo_Customer,         target: CUSTOMER_CT}
+  - {source: dbo.Product,          capture_instance: dbo_Product,          target: PRODUCT_CT}
+  - {source: dbo.SalesOrderHeader, capture_instance: dbo_SalesOrderHeader, target: SALESORDERHEADER_CT}
+  - {source: dbo.SalesOrderDetail, capture_instance: dbo_SalesOrderDetail, target: SALESORDERDETAIL_CT}

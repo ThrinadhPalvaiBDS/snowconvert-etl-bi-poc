@@ -1,0 +1,47 @@
+# Copy to .github/workflows/dbt_deploy.yml for POC_ADMIN mode.
+# CI identity: SVC_POC_PIPELINE (key pair) with role TRANSFORMER, which owns the dbt project.
+# The task DAG (06) is owned by POC_ADMIN and is re-applied manually, not from CI.
+name: Deploy dbt project to Snowflake
+on:
+  push:
+    branches: [main]
+    paths: ["dbt/**"]
+  workflow_dispatch:
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: SVC_POC_PIPELINE
+      SNOWFLAKE_PRIVATE_KEY_PATH: ${{ github.workspace }}/key.p8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - run: pip install "dbt-snowflake>=1.9,<2.0" snowflake-cli
+      - name: Key + snow CLI connection
+        run: |
+          echo "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > $SNOWFLAKE_PRIVATE_KEY_PATH
+          mkdir -p ~/.snowflake
+          cat > ~/.snowflake/config.toml <<TOML
+          [connections.deploy]
+          account = "${SNOWFLAKE_ACCOUNT}"
+          user = "SVC_POC_PIPELINE"
+          authenticator = "SNOWFLAKE_JWT"
+          private_key_file = "${SNOWFLAKE_PRIVATE_KEY_PATH}"
+          role = "TRANSFORMER"
+          warehouse = "WH_TRANSFORM"
+          TOML
+          chmod 0600 ~/.snowflake/config.toml
+      - name: Compile and keep manifest for slim CI
+        working-directory: dbt
+        run: |
+          dbt deps --profiles-dir .
+          dbt compile --profiles-dir . --target prod
+      - uses: actions/upload-artifact@v4
+        with: {name: prod-manifest, path: dbt/target/manifest.json}
+      - name: Fetch repo + add dbt project version
+        run: |
+          snow sql -c deploy -q "ALTER GIT REPOSITORY PLATFORM.INTEGRATIONS.SNOWCONVERT_POC_REPO FETCH"
+          snow sql -c deploy -q "ALTER DBT PROJECT PLATFORM.DBT.SALES_DW ADD VERSION FROM '@PLATFORM.INTEGRATIONS.SNOWCONVERT_POC_REPO/branches/main/dbt'"

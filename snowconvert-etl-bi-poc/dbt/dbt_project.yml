@@ -1,0 +1,46 @@
+name: sales_dw
+version: "1.0.0"
+config-version: 2
+profile: sales_dw
+
+model-paths: ["models"]
+snapshot-paths: ["snapshots"]
+macro-paths: ["macros"]
+seed-paths: ["seeds"]
+test-paths: ["tests"]
+
+vars:
+  # Kept for the watermark (non-CDC) ingestion path; CDC models use cdc_loaded_at instead
+  fct_sales_lookback_days: 3
+  unknown_member_key: -1
+
+on-run-end:
+  - "{{ log_run_results(results) }}"
+
+models:
+  sales_dw:
+    +persist_docs: {relation: true, columns: true}
+    +query_tag: "app=dbt;project=sales_dw"
+    staging:
+      +schema: STAGING
+      +materialized: view      # stg_*_cdc override to incremental tables
+    intermediate:
+      +schema: INTERMEDIATE
+      +materialized: ephemeral
+    marts:
+      +schema: MARTS
+      +materialized: table
+      +post-hook:
+        - "{{ apply_governance() }}"
+    compat:
+      +schema: DBO
+      +materialized: view
+      +docs: {node_color: "#888780"}
+
+snapshots:
+  sales_dw:
+    +schema: SNAPSHOTS
+
+seeds:
+  sales_dw:
+    +schema: STAGING

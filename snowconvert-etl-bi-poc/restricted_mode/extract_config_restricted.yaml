@@ -1,0 +1,12 @@
+# Restricted mode: everything lands in CORTEX_AI.DATA as RAW_* tables
+batch_size: 200000
+target_database: CORTEX_AI
+target_schema: DATA
+role: CORTEX_AI_FULL_ACCESS_ROLE
+warehouse: CORTEX_AI_WH
+watermark_table: POC_LOAD_WATERMARK
+tables:
+  - {source: dbo.Customer,         target: RAW_CUSTOMER,         watermark_column: ModifiedDate}
+  - {source: dbo.Product,          target: RAW_PRODUCT,          watermark_column: ModifiedDate}
+  - {source: dbo.SalesOrderHeader, target: RAW_SALESORDERHEADER, watermark_column: ModifiedDate}
+  - {source: dbo.SalesOrderDetail, target: RAW_SALESORDERDETAIL, watermark_column: ModifiedDate}

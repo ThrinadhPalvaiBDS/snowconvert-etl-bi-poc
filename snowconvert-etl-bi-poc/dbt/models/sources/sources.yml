@@ -1,0 +1,38 @@
+version: 2
+sources:
+  - name: raw
+    description: Landed copies of SalesOLTP (SSIS OLE DB Sources), append-only with load metadata.
+    database: "{{ 'SALES_DW_PROD' if target.name == 'prod' else target.database }}"
+    schema: "{{ target.schema if target.name == 'cortex' else 'RAW' }}"
+    loaded_at_field: _LOADED_AT
+    freshness:
+      warn_after: {count: 26, period: hour}
+      error_after: {count: 48, period: hour}
+    tables:
+      - name: customer
+        identifier: "{{ 'RAW_' if target.name == 'cortex' else '' }}CUSTOMER"
+        columns:
+          - name: customerid
+            data_tests: [not_null]
+      - name: product
+        identifier: "{{ 'RAW_' if target.name == 'cortex' else '' }}PRODUCT"
+      - name: salesorderheader
+        identifier: "{{ 'RAW_' if target.name == 'cortex' else '' }}SALESORDERHEADER"
+      - name: salesorderdetail
+        identifier: "{{ 'RAW_' if target.name == 'cortex' else '' }}SALESORDERDETAIL"
+      - name: customer_ct
+        description: SQL Server CDC change rows (S=snapshot, I/U/D) for dbo.Customer
+        identifier: "{{ 'RAW_' if target.name == 'cortex' else '' }}CUSTOMER_CT"
+        loaded_at_field: _LOADED_AT
+      - name: product_ct
+        description: SQL Server CDC change rows (S=snapshot, I/U/D) for dbo.Product
+        identifier: "{{ 'RAW_' if target.name == 'cortex' else '' }}PRODUCT_CT"
+        loaded_at_field: _LOADED_AT
+      - name: salesorderheader_ct
+        description: SQL Server CDC change rows (S=snapshot, I/U/D) for dbo.Salesorderheader
+        identifier: "{{ 'RAW_' if target.name == 'cortex' else '' }}SALESORDERHEADER_CT"
+        loaded_at_field: _LOADED_AT
+      - name: salesorderdetail_ct
+        description: SQL Server CDC change rows (S=snapshot, I/U/D) for dbo.Salesorderdetail
+        identifier: "{{ 'RAW_' if target.name == 'cortex' else '' }}SALESORDERDETAIL_CT"
+        loaded_at_field: _LOADED_AT

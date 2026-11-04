@@ -1,0 +1,16 @@
+batch_size: 200000
+target_database: SALES_DW_PROD
+target_schema: RAW
+tables:
+  - source: dbo.Customer
+    target: CUSTOMER
+    watermark_column: ModifiedDate
+  - source: dbo.Product
+    target: PRODUCT
+    watermark_column: ModifiedDate
+  - source: dbo.SalesOrderHeader
+    target: SALESORDERHEADER
+    watermark_column: ModifiedDate
+  - source: dbo.SalesOrderDetail
+    target: SALESORDERDETAIL
+    watermark_column: ModifiedDate

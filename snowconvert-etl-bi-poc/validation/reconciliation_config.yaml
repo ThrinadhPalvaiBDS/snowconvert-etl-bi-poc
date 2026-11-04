@@ -1,0 +1,32 @@
+# Legacy SQL Server DW (loaded by SSIS) vs Snowflake DBO compat views (built by dbt).
+# Compare on NATURAL keys - surrogate key values differ by design.
+snowflake_database: SALES_DW_PROD
+mssql_database_env: MSSQL_DW_DB
+amount_tolerance: 0.01
+checks:
+  - name: FactSales
+    legacy: dbo.FactSales
+    snowflake: DBO.FACTSALES
+    key: SalesOrderDetailID
+    measures: [Quantity, SalesAmount, DiscountAmount, CostAmount, MarginAmount]
+    group_by: [Channel, OrderStatus]
+    hash_columns: [OrderNumber, Channel, OrderStatus, Quantity, SalesAmount]
+    # Expected difference: dbt keeps customer-lookup misses with key -1 instead of rejecting them
+    known_difference_note: "Rows routed to FactSales_Error for customer no-match in SSIS are loaded as unknown member"
+  - name: DimProduct
+    legacy: dbo.DimProduct
+    snowflake: DBO.DIMPRODUCT
+    key: ProductID
+    measures: [ListPrice, StandardCost]
+    group_by: [Category]
+    hash_columns: [SKU, ProductName, Category, SubCategory, ListPrice]
+    filter_snowflake: "PRODUCTID <> -1"
+  - name: DimCustomerCurrent
+    legacy: dbo.DimCustomer
+    snowflake: DBO.DIMCUSTOMER
+    key: CustomerID
+    measures: []
+    group_by: [Region, Segment]
+    hash_columns: [CustomerCode, CustomerName, City, Country, Region, Segment]
+    filter_legacy: "IsCurrent = 1"
+    filter_snowflake: "ISCURRENT AND CUSTOMERID <> -1"

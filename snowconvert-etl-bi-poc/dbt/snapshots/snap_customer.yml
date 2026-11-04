@@ -1,0 +1,11 @@
+# SSIS: Slowly Changing Dimension wizard (Type 2 on City, Segment, Country; Type 1 elsewhere)
+# replaced by a set-based dbt snapshot.
+snapshots:
+  - name: snap_customer
+    relation: ref('stg_customers')
+    config:
+      unique_key: customer_id
+      strategy: check
+      check_cols: [city, segment, country_code]
+      hard_deletes: invalidate
+      dbt_valid_to_current: "null"

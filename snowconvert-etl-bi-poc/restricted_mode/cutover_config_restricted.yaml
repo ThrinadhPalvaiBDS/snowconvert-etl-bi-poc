@@ -1,0 +1,26 @@
+environment: poc
+tenant_id_env: PBI_TENANT_ID
+client_id_env: PBI_CLIENT_ID
+client_secret_env: PBI_CLIENT_SECRET
+
+snowflake:
+  parameters:                       # match the parameter names you see in the repointed .pbit
+    SnowflakeServer: <account_identifier>.snowflakecomputing.com
+    SnowflakeWarehouse: CORTEX_AI_WH
+    SnowflakeDatabase: CORTEX_AI
+  credential:
+    type: Basic
+    username_env: PBI_SNOWFLAKE_USER          # SVC_POC_POWERBI once ADMIN_REQUEST tier 1 is done
+    password_env: PBI_SNOWFLAKE_PASSWORD
+
+reports:
+  - name: Sales Performance
+    target_workspace_id: 00000000-0000-0000-0000-000000000000
+    pbix_path: powerbi/repointed/Sales Performance.pbix
+    legacy_dataset_id: 11111111-1111-1111-1111-111111111111
+    refresh: true
+
+dax_parity:
+  tolerance_abs: 0.01
+  tolerance_pct: 0.0001
+  queries_file: powerbi/dax_parity_queries.yaml

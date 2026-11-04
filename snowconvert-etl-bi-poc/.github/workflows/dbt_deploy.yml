@@ -1,0 +1,47 @@
+name: Deploy dbt project to Snowflake
+on:
+  push:
+    branches: [main]
+    paths: ["dbt/**", "snowflake/04_orchestration_tasks.sql"]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: prod            # requires approval in GitHub environment protection rules
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: SVC_CICD
+      SNOWFLAKE_PRIVATE_KEY_PATH: ${{ github.workspace }}/key.p8
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - run: pip install "dbt-snowflake>=1.9,<2.0" snowflake-cli
+      - name: Write key + snow CLI connection
+        run: |
+          echo "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > $SNOWFLAKE_PRIVATE_KEY_PATH
+          mkdir -p ~/.snowflake
+          cat > ~/.snowflake/config.toml <<TOML
+          [connections.deploy]
+          account = "${SNOWFLAKE_ACCOUNT}"
+          user = "SVC_CICD"
+          authenticator = "SNOWFLAKE_JWT"
+          private_key_file = "${SNOWFLAKE_PRIVATE_KEY_PATH}"
+          role = "PLATFORM_ADMIN"
+          warehouse = "WH_TRANSFORM"
+          TOML
+          chmod 0600 ~/.snowflake/config.toml
+      - name: Compile (fail fast) and keep manifest for slim CI
+        working-directory: dbt
+        run: |
+          dbt deps --profiles-dir .
+          dbt compile --profiles-dir . --target prod
+      - uses: actions/upload-artifact@v4
+        with: {name: prod-manifest, path: dbt/target/manifest.json}
+      - name: Refresh git repo + new dbt project version
+        run: |
+          snow sql -c deploy -q "ALTER GIT REPOSITORY PLATFORM.INTEGRATIONS.SNOWCONVERT_POC_REPO FETCH"
+          snow sql -c deploy -q "ALTER DBT PROJECT PLATFORM.DBT.SALES_DW ADD VERSION FROM '@PLATFORM.INTEGRATIONS.SNOWCONVERT_POC_REPO/branches/main/dbt'"
+      - name: Re-apply task DAG definition
+        run: snow sql -c deploy -f snowflake/04_orchestration_tasks.sql

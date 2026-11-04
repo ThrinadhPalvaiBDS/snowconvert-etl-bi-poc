@@ -1,0 +1,26 @@
+# Copy to .github/workflows/ when running in restricted mode.
+# Without CREATE SCHEMA there is no isolated place for PR builds, so CI validates
+# (deps + parse + compile against CORTEX_AI) and the build runs via run_pipeline.py.
+name: dbt CI (restricted mode)
+on:
+  pull_request:
+    paths: ["dbt/**"]
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+      SNOWFLAKE_PRIVATE_KEY_PATH: ${{ github.workspace }}/key.p8
+    defaults:
+      run:
+        working-directory: dbt
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - run: pip install "dbt-snowflake>=1.9,<2.0"
+      - run: echo "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > $SNOWFLAKE_PRIVATE_KEY_PATH
+      - run: dbt deps --profiles-dir .
+      - run: dbt parse --profiles-dir . --target cortex
+      - run: dbt compile --profiles-dir . --target cortex

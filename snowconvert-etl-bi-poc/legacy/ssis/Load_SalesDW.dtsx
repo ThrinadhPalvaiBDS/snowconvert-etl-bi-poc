@@ -1,0 +1,46 @@
+<?xml version="1.0"?>
+<!-- Abridged sample package for the POC. Put your real .dtsx/.ispac files next to it
+     in snowconvert/input/ssis before running SnowConvert AI. -->
+<DTS:Executable xmlns:DTS="www.microsoft.com/SqlServer/Dts"
+  DTS:refId="Package" DTS:ObjectName="Load_SalesDW" DTS:ExecutableType="Microsoft.Package">
+  <DTS:ConnectionManagers>
+    <DTS:ConnectionManager DTS:refId="Package.ConnectionManagers[OLTP]" DTS:ObjectName="OLTP"
+      DTS:CreationName="OLEDB">
+      <DTS:ObjectData><DTS:ConnectionManager
+        DTS:ConnectionString="Data Source=legacy-sql01;Initial Catalog=SalesOLTP;Provider=MSOLEDBSQL;Integrated Security=SSPI;"/></DTS:ObjectData>
+    </DTS:ConnectionManager>
+    <DTS:ConnectionManager DTS:refId="Package.ConnectionManagers[DW]" DTS:ObjectName="DW"
+      DTS:CreationName="OLEDB">
+      <DTS:ObjectData><DTS:ConnectionManager
+        DTS:ConnectionString="Data Source=legacy-sql01;Initial Catalog=SalesDW;Provider=MSOLEDBSQL;Integrated Security=SSPI;"/></DTS:ObjectData>
+    </DTS:ConnectionManager>
+  </DTS:ConnectionManagers>
+  <DTS:Variables>
+    <DTS:Variable DTS:Namespace="User" DTS:ObjectName="LastLoad"><DTS:VariableValue DTS:DataType="7">1900-01-01</DTS:VariableValue></DTS:Variable>
+  </DTS:Variables>
+  <DTS:Executables>
+    <DTS:Executable DTS:refId="Package\SQL - Get Watermark" DTS:ExecutableType="Microsoft.ExecuteSQLTask" DTS:ObjectName="SQL - Get Watermark">
+      <DTS:ObjectData><SQLTask:SqlTaskData xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask"
+        SQLTask:Connection="DW" SQLTask:SqlStatementSource="SELECT ISNULL(MAX(LoadDate),'1900-01-01') FROM etl.Watermark WHERE TableName='FactSales'"
+        SQLTask:ResultType="ResultSetType_SingleRow"/></DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable DTS:refId="Package\SEQ - Dimensions" DTS:ExecutableType="STOCK:SEQUENCE" DTS:ObjectName="SEQ - Dimensions">
+      <DTS:Executables>
+        <DTS:Executable DTS:refId="Package\SEQ - Dimensions\DFT - DimProduct" DTS:ExecutableType="Microsoft.Pipeline" DTS:ObjectName="DFT - DimProduct"/>
+        <DTS:Executable DTS:refId="Package\SEQ - Dimensions\DFT - DimCustomer" DTS:ExecutableType="Microsoft.Pipeline" DTS:ObjectName="DFT - DimCustomer"/>
+      </DTS:Executables>
+    </DTS:Executable>
+    <DTS:Executable DTS:refId="Package\DFT - FactSales" DTS:ExecutableType="Microsoft.Pipeline" DTS:ObjectName="DFT - FactSales"/>
+    <DTS:Executable DTS:refId="Package\SQL - Update Watermark" DTS:ExecutableType="Microsoft.ExecuteSQLTask" DTS:ObjectName="SQL - Update Watermark">
+      <DTS:ObjectData><SQLTask:SqlTaskData xmlns:SQLTask="www.microsoft.com/sqlserver/dts/tasks/sqltask"
+        SQLTask:Connection="DW" SQLTask:SqlStatementSource="UPDATE etl.Watermark SET LoadDate = SYSUTCDATETIME() WHERE TableName='FactSales'"/></DTS:ObjectData>
+    </DTS:Executable>
+    <DTS:Executable DTS:refId="Package\Send Mail - Success" DTS:ExecutableType="Microsoft.SendMailTask" DTS:ObjectName="Send Mail - Success"/>
+  </DTS:Executables>
+  <DTS:PrecedenceConstraints>
+    <DTS:PrecedenceConstraint DTS:From="Package\SQL - Get Watermark" DTS:To="Package\SEQ - Dimensions"/>
+    <DTS:PrecedenceConstraint DTS:From="Package\SEQ - Dimensions" DTS:To="Package\DFT - FactSales"/>
+    <DTS:PrecedenceConstraint DTS:From="Package\DFT - FactSales" DTS:To="Package\SQL - Update Watermark"/>
+    <DTS:PrecedenceConstraint DTS:From="Package\SQL - Update Watermark" DTS:To="Package\Send Mail - Success"/>
+  </DTS:PrecedenceConstraints>
+</DTS:Executable>

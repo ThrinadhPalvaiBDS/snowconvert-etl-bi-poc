@@ -1,0 +1,50 @@
+version: 2
+models:
+  - name: stg_customers
+    description: Current version of each OLTP customer, cleaned and typed.
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]
+      - name: customer_code
+        data_tests: [not_null]
+  - name: stg_products
+    columns:
+      - name: product_id
+        data_tests: [unique, not_null]
+      - name: list_price
+        data_tests:
+          - dbt_utils.accepted_range: {min_value: 0}
+  - name: stg_orders
+    columns:
+      - name: sales_order_id
+        data_tests: [unique, not_null]
+      - name: order_status
+        data_tests:
+          - accepted_values: {values: ['Open', 'Shipped', 'Cancelled', 'Unknown']}
+  - name: stg_order_lines
+    columns:
+      - name: sales_order_detail_id
+        data_tests: [unique, not_null]
+      - name: sales_order_id
+        data_tests:
+          - relationships: {to: ref('stg_orders'), field: sales_order_id}
+  - name: stg_customers_cdc
+    description: CDC current state incl. soft-deleted customers.
+    columns:
+      - name: customer_id
+        data_tests: [unique, not_null]
+      - name: cdc_operation
+        data_tests:
+          - accepted_values: {values: ['S', 'I', 'U', 'D']}
+  - name: stg_products_cdc
+    columns:
+      - name: product_id
+        data_tests: [unique, not_null]
+  - name: stg_orders_cdc
+    columns:
+      - name: sales_order_id
+        data_tests: [unique, not_null]
+  - name: stg_order_lines_cdc
+    columns:
+      - name: sales_order_detail_id
+        data_tests: [unique, not_null]

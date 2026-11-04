@@ -1,0 +1,15 @@
+version: 2
+models:
+  - name: DimCustomer
+    description: "Legacy-compatible view of dim_customer for repointed Power BI (do not add logic here)."
+    data_tests:
+      - dbt_utils.equal_rowcount: {compare_model: ref('dim_customer')}
+  - name: DimProduct
+    data_tests:
+      - dbt_utils.equal_rowcount: {compare_model: ref('dim_product')}
+  - name: DimDate
+  - name: FactSales
+    data_tests:
+      - dbt_utils.equal_rowcount: {compare_model: ref('fct_sales')}
+  - name: FactSales_Error
+  - name: vw_SalesByMonth

@@ -1,0 +1,16 @@
+# Same DAX runs against the legacy (SQL Server) and repointed (Snowflake) semantic models.
+# Use real measure names from your models; these match the sample star schema.
+Sales Performance:
+  - name: total_by_year
+    dax: |
+      EVALUATE SUMMARIZECOLUMNS('DimDate'[Year], "Sales", SUM('FactSales'[SalesAmount]), "Margin", SUM('FactSales'[MarginAmount]))
+  - name: total_by_region_category
+    dax: |
+      EVALUATE SUMMARIZECOLUMNS('DimCustomer'[Region], 'DimProduct'[Category], "Sales", SUM('FactSales'[SalesAmount]))
+  - name: order_counts_by_channel
+    dax: |
+      EVALUATE SUMMARIZECOLUMNS('FactSales'[Channel], "Lines", COUNTROWS('FactSales'), "Orders", DISTINCTCOUNT('FactSales'[OrderNumber]))
+Customer 360:
+  - name: customers_by_segment
+    dax: |
+      EVALUATE SUMMARIZECOLUMNS('DimCustomer'[Segment], "Customers", CALCULATE(DISTINCTCOUNT('DimCustomer'[CustomerID]), 'DimCustomer'[IsCurrent] = TRUE()))

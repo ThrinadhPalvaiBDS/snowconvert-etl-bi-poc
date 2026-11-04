@@ -1,0 +1,43 @@
+name: dbt CI (slim)
+on:
+  pull_request:
+    paths: ["dbt/**", ".github/workflows/dbt_ci.yml"]
+
+concurrency:
+  group: dbt-ci-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+      SNOWFLAKE_USER: SVC_DBT_DEPLOY
+      SNOWFLAKE_PRIVATE_KEY_PATH: ${{ github.workspace }}/key.p8
+      PR_NUMBER: ${{ github.event.pull_request.number }}
+    defaults:
+      run:
+        working-directory: dbt
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: "3.11"}
+      - run: pip install "dbt-snowflake>=1.9,<2.0" sqlfluff sqlfluff-templater-dbt
+      - name: Write key
+        run: echo "${{ secrets.SNOWFLAKE_PRIVATE_KEY }}" > $SNOWFLAKE_PRIVATE_KEY_PATH
+      - run: dbt deps --profiles-dir .
+      - name: Fetch prod manifest for state comparison
+        continue-on-error: true
+        uses: dawidd6/action-download-artifact@v6
+        with: {workflow: dbt_deploy.yml, name: prod-manifest, path: dbt/prod-state}
+      - name: Build modified models + downstream (defer to prod)
+        run: |
+          if [ -f prod-state/manifest.json ]; then
+            dbt build --profiles-dir . --target ci --select state:modified+ --defer --state prod-state
+          else
+            dbt build --profiles-dir . --target ci
+          fi
+      - name: Drop PR schemas
+        if: always()
+        run: |
+          dbt run-operation --profiles-dir . --target ci drop_ci_schemas --args "{prefix: CI_PR_${PR_NUMBER}}" || true
