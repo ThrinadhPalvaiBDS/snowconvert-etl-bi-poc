@@ -72,6 +72,19 @@ WHEN MATCHED THEN UPDATE SET Country = s.Country, Region = s.Region
 WHEN NOT MATCHED THEN INSERT (CountryCode, Country, Region) VALUES (s.CountryCode, s.Country, s.Region);
 GO
 
+-- Unknown member: fact lines whose customer is not found are loaded against it
+-- (and still logged in FactSales_Error), the same as the dbt models do
+IF NOT EXISTS (SELECT 1 FROM dbo.DimCustomer WHERE CustomerKey = -1)
+BEGIN
+    SET IDENTITY_INSERT dbo.DimCustomer ON;
+    INSERT dbo.DimCustomer (CustomerKey, CustomerID, CustomerCode, CustomerName, Email, City, Country, Region,
+                            Segment, RowStartDate, RowEndDate, IsCurrent)
+    VALUES (-1, -1, N'UNKNOWN', N'Unknown', NULL, N'Unknown', N'Unknown', N'Unknown', N'Unknown',
+            '1900-01-01', NULL, 1);
+    SET IDENTITY_INSERT dbo.DimCustomer OFF;
+END;
+GO
+
 -- ---------------------------------------------------------------------
 -- Logging helper
 -- ---------------------------------------------------------------------
@@ -233,10 +246,12 @@ GO
 
 -- ---------------------------------------------------------------------
 -- DFT - FactSales: incremental load from the watermark
---   Lookups      : DimCustomer (current row), DimProduct
+--   Lookups      : DimCustomer (current row, no match -> unknown member -1), DimProduct
 --   Derived Cols : OrderDateKey, OrderStatus, amounts
 --   Cond. Split  : bad rows -> FactSales_Error (same rules and order as
---                  dbt int_order_lines_rejected), good rows -> FactSales
+--                  dbt int_order_lines_rejected), good rows -> FactSales.
+--                  Customer lookup no match is logged AND loaded (unknown
+--                  customer); the other three reasons are logged and dropped.
 -- ---------------------------------------------------------------------
 CREATE OR ALTER PROCEDURE etl.usp_Load_FactSales
     @RowsLoaded   INT OUTPUT,
@@ -299,7 +314,7 @@ BEGIN
     DELETE f
     FROM   dbo.FactSales f
     JOIN   #enriched x ON x.SalesOrderDetailID = f.SalesOrderDetailID
-    WHERE  x.OrderQty <= 0 OR x.UnitPrice < 0 OR x.ProductKey IS NULL OR x.CustomerKey IS NULL;
+    WHERE  x.OrderQty <= 0 OR x.UnitPrice < 0 OR x.ProductKey IS NULL;
 
     -- Conditional Split: default output -> FactSales (upsert)
     MERGE dbo.FactSales AS t
@@ -307,7 +322,7 @@ BEGIN
         SELECT  SalesOrderDetailID,
                 OrderNumber,
                 CONVERT(INT, CONVERT(CHAR(8), OrderDate, 112))                      AS OrderDateKey,
-                CustomerKey,
+                ISNULL(CustomerKey, -1)                                             AS CustomerKey,
                 ProductKey,
                 Channel,
                 CASE Status WHEN 1 THEN N'Open' WHEN 2 THEN N'Shipped'
@@ -318,7 +333,7 @@ BEGIN
                 CAST(ROUND(OrderQty * UnitPrice * (1 - UnitPriceDiscount), 4) AS DECIMAL(19,4)) AS SalesAmount,
                 CAST(ROUND(OrderQty * StandardCost, 4) AS DECIMAL(19,4))            AS CostAmount
         FROM    #enriched
-        WHERE   OrderQty > 0 AND UnitPrice >= 0 AND ProductKey IS NOT NULL AND CustomerKey IS NOT NULL
+        WHERE   OrderQty > 0 AND UnitPrice >= 0 AND ProductKey IS NOT NULL
     ) AS s
     ON t.SalesOrderDetailID = s.SalesOrderDetailID
     WHEN MATCHED THEN UPDATE SET

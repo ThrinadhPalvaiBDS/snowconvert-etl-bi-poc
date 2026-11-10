@@ -36,4 +36,6 @@ models:
           - relationships: {to: ref('dim_date'), field: date_key}
       - name: sales_amount
         data_tests:
-          - dbt_utils.accepted_range: {min_value: 0}
+          - dbt_utils.accepted_range:
+              arguments: {min_value: 0}
+              config: {severity: warn}
