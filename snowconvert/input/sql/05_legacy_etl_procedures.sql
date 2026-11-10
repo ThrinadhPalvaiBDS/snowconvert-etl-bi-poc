@@ -55,14 +55,18 @@ CREATE TABLE etl.CountryRegion (
 GO
 
 MERGE etl.CountryRegion AS t
-USING (VALUES ('US', N'United States',  N'North America'),
-              ('CA', N'Canada',         N'North America'),
-              ('GB', N'United Kingdom', N'Europe'),
-              ('DE', N'Germany',        N'Europe'),
-              ('FR', N'France',         N'Europe'),
-              ('IN', N'India',          N'Asia Pacific'),
-              ('JP', N'Japan',          N'Asia Pacific'),
-              ('AU', N'Australia',      N'Asia Pacific')) AS s (CountryCode, Country, Region)
+USING (VALUES ('IN', N'India',                N'APAC'),
+              ('SG', N'Singapore',            N'APAC'),
+              ('AU', N'Australia',            N'APAC'),
+              ('JP', N'Japan',                N'APAC'),
+              ('US', N'United States',        N'NA'),
+              ('CA', N'Canada',               N'NA'),
+              ('GB', N'United Kingdom',       N'EMEA'),
+              ('DE', N'Germany',              N'EMEA'),
+              ('FR', N'France',               N'EMEA'),
+              ('AE', N'United Arab Emirates', N'EMEA'),
+              ('BR', N'Brazil',               N'LATAM'),
+              ('MX', N'Mexico',               N'LATAM')) AS s (CountryCode, Country, Region)
 ON t.CountryCode = s.CountryCode
 WHEN MATCHED THEN UPDATE SET Country = s.Country, Region = s.Region
 WHEN NOT MATCHED THEN INSERT (CountryCode, Country, Region) VALUES (s.CountryCode, s.Country, s.Region);
