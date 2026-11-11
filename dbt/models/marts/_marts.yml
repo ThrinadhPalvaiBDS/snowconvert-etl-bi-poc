@@ -37,5 +37,6 @@ models:
       - name: sales_amount
         data_tests:
           - dbt_utils.accepted_range:
-              arguments: {min_value: 0}
-              config: {severity: warn}
+              min_value: 0
+              config:
+                severity: warn
