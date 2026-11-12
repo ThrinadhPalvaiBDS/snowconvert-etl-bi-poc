@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.1",
+  "source_system": "sql",
+  "engine_version": "2.54.0-Pr",
+  "source_file": "defaultdb/dbo/table/dimproduct.sql",
+  "source_checksum": "b3be925d60f638604c17f026d699488a79be1a2086c934a8f07e1ae6b0be9cd6",
+  "pairs": [
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlUseStatement",
+      "source_line_start": 1,
+      "source_line_end": 1,
+      "source_text": "USE defaultdb",
+      "targets": [
+        "USE DATABASE <%defaultdb%>"
+      ],
+      "target_file": "defaultdb/dbo/table/dimproduct.sql"
+    }
+  ],
+  "nodes": [
+    {
+      "node_type": "DDL_CREATE_TABLE",
+      "depth": 0,
+      "offset": 19,
+      "start_line": 5,
+      "start_column": 0,
+      "end_line": 15,
+      "end_column": 2,
+      "target_tables": [
+        "dbo.dimproduct"
+      ],
+      "source_text": "CREATE TABLE dbo.DimProduct (\r\n    ProductKey      INT IDENTITY(1,1) PRIMARY KEY,\r\n    ProductID       INT           NOT NULL,\r\n    SKU             NVARCHAR(30)  NOT NULL,\r\n    ProductName     NVARCHAR(200) NOT NULL,\r\n    Category        NVARCHAR(50)  NOT NULL,\r\n    SubCategory     NVARCHAR(50)  NOT NULL,\r\n    ListPrice       DECIMAL(19,4) NOT NULL,\r\n    StandardCost    DECIMAL(19,4) NOT NULL,\r\n    IsActive        BIT           NOT NULL\r\n)",
+      "parse_failed": false
+    }
+  ]
+}

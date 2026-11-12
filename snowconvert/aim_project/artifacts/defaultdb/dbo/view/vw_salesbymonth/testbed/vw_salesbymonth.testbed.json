@@ -1,0 +1,47 @@
+{
+  "object": "defaultdb.dbo.vw_SalesByMonth",
+  "object_type": "VIEW",
+  "branches": [],
+  "predicates": [],
+  "edges": [
+    {
+      "left_table": "defaultdb.dbo.DimCustomer",
+      "left_columns": [
+        "CustomerKey"
+      ],
+      "right_table": "defaultdb.dbo.FactSales",
+      "right_columns": [
+        "CustomerKey"
+      ],
+      "join_type": "inner",
+      "is_anti": false
+    },
+    {
+      "left_table": "defaultdb.dbo.DimDate",
+      "left_columns": [
+        "DateKey"
+      ],
+      "right_table": "defaultdb.dbo.FactSales",
+      "right_columns": [
+        "OrderDateKey"
+      ],
+      "join_type": "inner",
+      "is_anti": false
+    },
+    {
+      "left_table": "defaultdb.dbo.DimProduct",
+      "left_columns": [
+        "ProductKey"
+      ],
+      "right_table": "defaultdb.dbo.FactSales",
+      "right_columns": [
+        "ProductKey"
+      ],
+      "join_type": "inner",
+      "is_anti": false
+    }
+  ],
+  "assignments": [],
+  "semi_anti": [],
+  "schema_version": 1
+}

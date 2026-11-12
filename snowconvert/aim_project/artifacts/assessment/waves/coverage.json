@@ -1,0 +1,65 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-11T16:30:36.239489Z",
+  "workload": {
+    "objects": 17,
+    "containers": 0,
+    "reports": 0,
+    "missing": 9,
+    "roots": 4,
+    "flowEnds": 3,
+    "isolatedRoots": 1,
+    "plumbingRoots": 1,
+    "plumbingRootsByReason": {
+      "platform": 1
+    },
+    "meaningfulRoots": 3,
+    "rootsByRole": {
+      "consumer": 1,
+      "dataOnly": 1,
+      "fed": 0,
+      "process": 1
+    },
+    "businessRoots": 2,
+    "dataOnlyRoots": 1,
+    "reachableObjects": 16,
+    "businessReachableObjects": 12,
+    "resolvedReferences": 0,
+    "ceiling": {
+      "maxUseCases": 100,
+      "maxSeeds": 50,
+      "maxMembers": 2000,
+      "slots": 205000,
+      "feasible": true
+    },
+    "mode": "standard"
+  },
+  "draft": {
+    "path": "C:\\Users\\Thrinadh Palvai\\Downloads\\files\\snowconvert-etl-bi-poc\\snowconvert\\aim_project\\artifacts\\assessment\\waves\\business-use-cases.json",
+    "useCases": 2,
+    "unknownIds": {
+      "items": [],
+      "total": 0,
+      "truncated": false
+    },
+    "contractProblems": {
+      "items": [],
+      "total": 0,
+      "truncated": false
+    },
+    "planned": 16,
+    "pct": 0.9412,
+    "pending": 1,
+    "pendingByReason": {
+      "platform": 1
+    },
+    "pendingPlumbingShare": 1,
+    "uncoveredMeaningfulRoots": 0,
+    "meetsTarget": true,
+    "topUncoveredRoots": {
+      "items": [],
+      "total": 0,
+      "truncated": false
+    }
+  }
+}

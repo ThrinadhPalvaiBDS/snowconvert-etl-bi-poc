@@ -1,0 +1,239 @@
+{
+  "schema_version": "1.1",
+  "source_system": "sql",
+  "engine_version": "2.54.0-Pr",
+  "source_file": "salesdw/dbo/unknown_type/05_legacy_etl_procedures.sql",
+  "source_checksum": "9b18c054931a09a7e27fef90bfa06cb5ebf3bfa66a76dcf2ddb67dfa0ebf335c",
+  "pairs": [
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlUseStatement",
+      "source_line_start": 1,
+      "source_line_end": 1,
+      "source_text": "USE SalesDW",
+      "targets": [
+        "USE DATABASE <%salesdw%>"
+      ],
+      "target_file": "salesdw/dbo/unknown_type/05_legacy_etl_procedures.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.AnsiSql.AST.SqlBaseIf",
+      "source_line_start": 5,
+      "source_line_end": 5,
+      "source_text": "\r\nIF SCHEMA_ID('etl') IS NULL EXEC (/*<<BRANCH:~src=Q1JFQVRFIFNDSEVNQSBldGw=*/  CREATE SCHEMA etl /*>>BRANCH:*/\r\n   );",
+      "targets": [
+        "IF (SCHEMA_ID('etl') IS NULL) THEN\r\n   EXECUTE IMMEDIATE '\r\nCREATE SCHEMA IF NOT EXISTS etl ';\r\nEND IF"
+      ],
+      "target_file": "salesdw/dbo/unknown_type/05_legacy_etl_procedures.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.AnsiSql.AST.SqlSelect",
+      "source_line_start": 6,
+      "source_line_end": 6,
+      "source_text": "SELECT 1 FROM etl.Watermark WHERE TableName = N'FactSales'",
+      "targets": [
+        "SELECT 1 FROM\r\n   etl.Watermark\r\nWHERE\r\n   TableName = 'FactSales'"
+      ],
+      "target_file": "salesdw/dbo/unknown_type/05_legacy_etl_procedures.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.AnsiSql.AST.SqlBaseIf",
+      "source_line_start": 6,
+      "source_line_end": 7,
+      "source_text": "IF NOT EXISTS (SELECT 1 FROM etl.Watermark WHERE TableName = N'FactSales')\r\n    INSERT etl.Watermark (TableName, LoadDate) VALUES (N'FactSales', '1900-01-01');",
+      "targets": [
+        "IF (NOT EXISTS (SELECT 1 FROM\r\n      etl.Watermark\r\n   WHERE\r\n      TableName = 'FactSales'\r\n)) THEN\r\n   INSERT INTO etl.Watermark (TableName, LoadDate) VALUES ('FactSales', '1900-01-01');\r\n      END IF"
+      ],
+      "target_file": "salesdw/dbo/unknown_type/05_legacy_etl_procedures.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 7,
+      "source_line_end": 7,
+      "source_text": "    INSERT etl.Watermark (TableName, LoadDate) VALUES (N'FactSales', '1900-01-01');",
+      "targets": [
+        "    INSERT INTO etl.Watermark (TableName, LoadDate) VALUES ('FactSales', '1900-01-01');"
+      ],
+      "target_file": "salesdw/dbo/unknown_type/05_legacy_etl_procedures.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlMergeStatement",
+      "source_line_start": 8,
+      "source_line_end": 23,
+      "source_text": "MERGE etl.CountryRegion AS t\r\nUSING (VALUES ('IN', N'India',                N'APAC'),\r\n              ('SG', N'Singapore',            N'APAC'),\r\n              ('AU', N'Australia',            N'APAC'),\r\n              ('JP', N'Japan',                N'APAC'),\r\n              ('US', N'United States',        N'NA'),\r\n              ('CA', N'Canada',               N'NA'),\r\n              ('GB', N'United Kingdom',       N'EMEA'),\r\n              ('DE', N'Germany',              N'EMEA'),\r\n              ('FR', N'France',               N'EMEA'),\r\n              ('AE', N'United Arab Emirates', N'EMEA'),\r\n              ('BR', N'Brazil',               N'LATAM'),\r\n              ('MX', N'Mexico',               N'LATAM')) AS s (CountryCode, Country, Region)\r\nON t.CountryCode = s.CountryCode\r\nWHEN MATCHED THEN UPDATE SET Country = s.Country, Region = s.Region\r\nWHEN NOT MATCHED THEN INSERT (CountryCode, Country, Region) VALUES (s.CountryCode, s.Country, s.Region)",
+      "targets": [
+        "MERGE INTO etl.CountryRegion AS t\r\nUSING (VALUES ('IN', 'India', 'APAC'),\r\n             ('SG', 'Singapore', 'APAC'),\r\n             ('AU', 'Australia', 'APAC'),\r\n             ('JP', 'Japan', 'APAC'),\r\n             ('US', 'United States', 'NA'),\r\n             ('CA', 'Canada', 'NA'),\r\n             ('GB', 'United Kingdom', 'EMEA'),\r\n             ('DE', 'Germany', 'EMEA'),\r\n             ('FR', 'France', 'EMEA'),\r\n             ('AE', 'United Arab Emirates', 'EMEA'),\r\n             ('BR', 'Brazil', 'LATAM'),\r\n             ('MX', 'Mexico', 'LATAM')) AS s (\r\n   CountryCode,\r\n   Country,\r\n   Region\r\n)\r\nON t.CountryCode = s.CountryCode\r\nWHEN MATCHED THEN\r\n   UPDATE SET\r\n      Country = s.Country,\r\n      Region = s.Region\r\nWHEN NOT MATCHED THEN\r\n   INSERT (CountryCode, Country, Region) VALUES (s.CountryCode, s.Country, s.Region)"
+      ],
+      "target_file": "salesdw/dbo/unknown_type/05_legacy_etl_procedures.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.AnsiSql.AST.SqlSelect",
+      "source_line_start": 24,
+      "source_line_end": 24,
+      "source_text": "SELECT 1 FROM dbo.DimCustomer WHERE CustomerKey = -1",
+      "targets": [
+        "SELECT 1 FROM\r\n   dbo.DimCustomer\r\nWHERE\r\n   CustomerKey = -1"
+      ],
+      "target_file": "salesdw/dbo/unknown_type/05_legacy_etl_procedures.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.AnsiSql.AST.SqlBaseIf",
+      "source_line_start": 24,
+      "source_line_end": 32,
+      "source_text": "IF NOT EXISTS (SELECT 1 FROM dbo.DimCustomer WHERE CustomerKey = -1)\r\nBEGIN\r\n--    SET IDENTITY_INSERT dbo.DimCustomer ON;\r\n    INSERT dbo.DimCustomer (CustomerKey, CustomerID, CustomerCode, CustomerName, Email, City, Country, Region,\r\n                            Segment, RowStartDate, RowEndDate, IsCurrent)\r\n    VALUES (-1, -1, N'UNKNOWN', N'Unknown', NULL, N'Unknown', N'Unknown', N'Unknown', N'Unknown',\r\n            '1900-01-01', NULL, 1);\r\n--    SET IDENTITY_INSERT dbo.DimCustomer OFF;\r\nEND;",
+      "targets": [
+        "IF (NOT EXISTS (SELECT 1 FROM\r\n      dbo.DimCustomer\r\n   WHERE\r\n      CustomerKey = -1)) THEN\r\n   BEGIN\r\n--       SET IDENTITY_INSERT dbo.DimCustomer ON;\r\n       INSERT INTO dbo.DimCustomer (CustomerKey, CustomerID, CustomerCode, CustomerName, Email, City, Country, Region, Segment, RowStartDate, RowEndDate, IsCurrent) VALUES (-1, -1, 'UNKNOWN', 'Unknown', NULL, 'Unknown', 'Unknown', 'Unknown', 'Unknown',\r\n               '1900-01-01', NULL, 1);\r\n--       SET IDENTITY_INSERT dbo.DimCustomer OFF;\r\n   END;\r\n      END IF"
+      ],
+      "target_file": "salesdw/dbo/unknown_type/05_legacy_etl_procedures.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 25,
+      "source_line_end": 32,
+      "source_text": "BEGIN\r\n--    SET IDENTITY_INSERT dbo.DimCustomer ON;\r\n    INSERT dbo.DimCustomer (CustomerKey, CustomerID, CustomerCode, CustomerName, Email, City, Country, Region,\r\n                            Segment, RowStartDate, RowEndDate, IsCurrent)\r\n    VALUES (-1, -1, N'UNKNOWN', N'Unknown', NULL, N'Unknown', N'Unknown', N'Unknown', N'Unknown',\r\n            '1900-01-01', NULL, 1);\r\n--    SET IDENTITY_INSERT dbo.DimCustomer OFF;\r\nEND;",
+      "targets": [
+        "BEGIN\r\n--    SET IDENTITY_INSERT dbo.DimCustomer ON;\r\n    INSERT INTO dbo.DimCustomer (CustomerKey, CustomerID, CustomerCode, CustomerName, Email, City, Country, Region, Segment, RowStartDate, RowEndDate, IsCurrent) VALUES (-1, -1, 'UNKNOWN', 'Unknown', NULL, 'Unknown', 'Unknown', 'Unknown', 'Unknown',\r\n            '1900-01-01', NULL, 1);\r\n--    SET IDENTITY_INSERT dbo.DimCustomer OFF;\r\nEND;"
+      ],
+      "target_file": "salesdw/dbo/unknown_type/05_legacy_etl_procedures.sql"
+    },
+    {
+      "pair_kind": "unsupported",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 26,
+      "source_line_end": 26,
+      "source_text": "--    SET IDENTITY_INSERT dbo.DimCustomer ON;",
+      "targets": [
+        "--    SET IDENTITY_INSERT dbo.DimCustomer ON;"
+      ],
+      "target_file": "salesdw/dbo/unknown_type/05_legacy_etl_procedures.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 27,
+      "source_line_end": 30,
+      "source_text": "    INSERT dbo.DimCustomer (CustomerKey, CustomerID, CustomerCode, CustomerName, Email, City, Country, Region,\r\n                            Segment, RowStartDate, RowEndDate, IsCurrent)\r\n    VALUES (-1, -1, N'UNKNOWN', N'Unknown', NULL, N'Unknown', N'Unknown', N'Unknown', N'Unknown',\r\n            '1900-01-01', NULL, 1);",
+      "targets": [
+        "    INSERT INTO dbo.DimCustomer (CustomerKey, CustomerID, CustomerCode, CustomerName, Email, City, Country, Region, Segment, RowStartDate, RowEndDate, IsCurrent) VALUES (-1, -1, 'UNKNOWN', 'Unknown', NULL, 'Unknown', 'Unknown', 'Unknown', 'Unknown',\r\n            '1900-01-01', NULL, 1);"
+      ],
+      "target_file": "salesdw/dbo/unknown_type/05_legacy_etl_procedures.sql"
+    },
+    {
+      "pair_kind": "unsupported",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 31,
+      "source_line_end": 31,
+      "source_text": "--    SET IDENTITY_INSERT dbo.DimCustomer OFF;",
+      "targets": [
+        "--    SET IDENTITY_INSERT dbo.DimCustomer OFF;"
+      ],
+      "target_file": "salesdw/dbo/unknown_type/05_legacy_etl_procedures.sql"
+    }
+  ],
+  "nodes": [
+    {
+      "node_type": "IF_THEN",
+      "depth": 0,
+      "offset": 18,
+      "start_line": 5,
+      "start_column": 0,
+      "end_line": 5,
+      "end_column": 55,
+      "predicate": "SCHEMA_ID('etl') IS NULL",
+      "target_tables": [],
+      "source_text": "IF SCHEMA_ID('etl') IS NULL EXEC ('CREATE SCHEMA etl');",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DYNAMIC_SQL",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 46,
+      "start_line": 5,
+      "start_column": 28,
+      "end_line": 5,
+      "end_column": 54,
+      "target_tables": [],
+      "source_text": "EXEC ('CREATE SCHEMA etl')",
+      "parse_failed": false
+    },
+    {
+      "node_type": "IF_THEN",
+      "depth": 0,
+      "offset": 75,
+      "start_line": 6,
+      "start_column": 0,
+      "end_line": 7,
+      "end_column": 84,
+      "predicate": "NOT EXISTS (SELECT 1 FROM etl.Watermark WHERE TableName = N'FactSales')",
+      "target_tables": [],
+      "source_text": "IF NOT EXISTS (SELECT 1 FROM etl.Watermark WHERE TableName = N'FactSales')\r\n    INSERT etl.Watermark (TableName, LoadDate) VALUES (N'FactSales', '1900-01-01');",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DML_INSERT",
+      "parent_index": 2,
+      "depth": 1,
+      "offset": 155,
+      "start_line": 7,
+      "start_column": 5,
+      "end_line": 7,
+      "end_column": 83,
+      "target_tables": [
+        "etl.watermark"
+      ],
+      "source_text": "INSERT etl.Watermark (TableName, LoadDate) VALUES (N'FactSales', '1900-01-01')",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DML_MERGE",
+      "depth": 0,
+      "offset": 236,
+      "start_line": 8,
+      "start_column": 0,
+      "end_line": 23,
+      "end_column": 104,
+      "target_tables": [
+        "etl.countryregion"
+      ],
+      "source_text": "MERGE etl.CountryRegion AS t\r\nUSING (VALUES ('IN', N'India',                N'APAC'),\r\n              ('SG', N'Singapore',            N'APAC'),\r\n              ('AU', N'Australia',            N'APAC'),\r\n              ('JP', N'Japan',                N'APAC'),\r\n              ('US', N'United States',        N'NA'),\r\n              ('CA', N'Canada',               N'NA'),\r\n              ('GB', N'United Kingdom',       N'EMEA'),\r\n              ('DE', N'Germany',              N'EMEA'),\r\n              ('FR', N'France',               N'EMEA'),\r\n              ('AE', N'United Arab Emirates', N'EMEA'),\r\n              ('BR', N'Brazil',               N'LATAM'),\r\n              ('MX', N'Mexico',               N'LATAM')) AS s (CountryCode, Country, Region)\r\nON t.CountryCode = s.CountryCode\r\nWHEN MATCHED THEN UPDATE SET Country = s.Country, Region = s.Region\r\nWHEN NOT MATCHED THEN INSERT (CountryCode, Country, Region) VALUES (s.CountryCode, s.Country, s.Region)",
+      "parse_failed": false
+    },
+    {
+      "node_type": "IF_THEN",
+      "depth": 0,
+      "offset": 1193,
+      "start_line": 24,
+      "start_column": 0,
+      "end_line": 32,
+      "end_column": 5,
+      "predicate": "NOT EXISTS (SELECT 1 FROM dbo.DimCustomer WHERE CustomerKey = -1)",
+      "target_tables": [],
+      "source_text": "IF NOT EXISTS (SELECT 1 FROM dbo.DimCustomer WHERE CustomerKey = -1)\r\nBEGIN\r\n    SET IDENTITY_INSERT dbo.DimCustomer ON;\r\n    INSERT dbo.DimCustomer (CustomerKey, CustomerID, CustomerCode, CustomerName, Email, City, Country, Region,\r\n                            Segment, RowStartDate, RowEndDate, IsCurrent)\r\n    VALUES (-1, -1, N'UNKNOWN', N'Unknown', NULL, N'Unknown', N'Unknown', N'Unknown', N'Unknown',\r\n            '1900-01-01', NULL, 1);\r\n    SET IDENTITY_INSERT dbo.DimCustomer OFF;\r\nEND;",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DML_INSERT",
+      "parent_index": 5,
+      "depth": 1,
+      "offset": 1319,
+      "start_line": 27,
+      "start_column": 5,
+      "end_line": 30,
+      "end_column": 35,
+      "target_tables": [
+        "dbo.dimcustomer"
+      ],
+      "source_text": "INSERT dbo.DimCustomer (CustomerKey, CustomerID, CustomerCode, CustomerName, Email, City, Country, Region,\r\n                            Segment, RowStartDate, RowEndDate, IsCurrent)\r\n    VALUES (-1, -1, N'UNKNOWN', N'Unknown', NULL, N'Unknown', N'Unknown', N'Unknown', N'Unknown',\r\n            '1900-01-01', NULL, 1)",
+      "parse_failed": false
+    }
+  ]
+}

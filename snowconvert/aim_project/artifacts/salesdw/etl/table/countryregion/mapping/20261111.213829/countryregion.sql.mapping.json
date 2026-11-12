@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.1",
+  "source_system": "sql",
+  "engine_version": "2.54.0-Pr",
+  "source_file": "salesdw/etl/table/countryregion.sql",
+  "source_checksum": "b5696a4339e1739909bced1fac862dd01c73b0882be81efc9d73c83f9cfb21fb",
+  "pairs": [
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlUseStatement",
+      "source_line_start": 1,
+      "source_line_end": 1,
+      "source_text": "USE SalesDW",
+      "targets": [
+        "USE DATABASE <%salesdw%>"
+      ],
+      "target_file": "salesdw/etl/table/countryregion.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.AnsiSql.AST.SqlBaseIf",
+      "source_line_start": 5,
+      "source_line_end": 10,
+      "source_text": "\r\nIF OBJECT_ID('etl.CountryRegion') IS NULL\r\nCREATE TABLE etl.CountryRegion (\r\n    CountryCode CHAR(2)       NOT NULL PRIMARY KEY,\r\n    Country     NVARCHAR(100) NOT NULL,\r\n    Region      NVARCHAR(50)  NOT NULL\r\n);",
+      "targets": [
+        "CREATE TABLE IF NOT EXISTS etl.CountryRegion (\r\n   CountryCode CHAR(2) NOT NULL PRIMARY KEY,\r\n   Country NVARCHAR(100) NOT NULL,\r\n   Region NVARCHAR(50) NOT NULL\r\n)\r\nCOMMENT = '{ \"origin\": \"sf_sc\", \"name\": \"snowconvert\", \"version\": {  \"major\": 2,  \"minor\": 54,  \"patch\": \"0-Pr\" }, \"attributes\": {  \"component\": \"transact\",  \"convertedOn\": \"11-11-2026\",  \"domain\": \"no-domain-provided\",  \"migrationid\": \"XsuhASpUt3+avDxmnPT2Mw==\" }}'"
+      ],
+      "target_file": "salesdw/etl/table/countryregion.sql"
+    },
+    {
+      "pair_kind": "absorbed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 6,
+      "source_line_end": 10,
+      "source_text": "CREATE TABLE etl.CountryRegion (\r\n    CountryCode CHAR(2)       NOT NULL PRIMARY KEY,\r\n    Country     NVARCHAR(100) NOT NULL,\r\n    Region      NVARCHAR(50)  NOT NULL\r\n);",
+      "targets": [],
+      "target_file": "salesdw/etl/table/countryregion.sql"
+    }
+  ],
+  "nodes": [
+    {
+      "node_type": "IF_THEN",
+      "depth": 0,
+      "offset": 18,
+      "start_line": 5,
+      "start_column": 0,
+      "end_line": 10,
+      "end_column": 3,
+      "predicate": "OBJECT_ID('etl.CountryRegion') IS NULL",
+      "target_tables": [],
+      "source_text": "IF OBJECT_ID('etl.CountryRegion') IS NULL\r\nCREATE TABLE etl.CountryRegion (\r\n    CountryCode CHAR(2)       NOT NULL PRIMARY KEY,\r\n    Country     NVARCHAR(100) NOT NULL,\r\n    Region      NVARCHAR(50)  NOT NULL\r\n);",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DDL_CREATE_TABLE",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 61,
+      "start_line": 6,
+      "start_column": 1,
+      "end_line": 10,
+      "end_column": 2,
+      "target_tables": [
+        "etl.countryregion"
+      ],
+      "source_text": "CREATE TABLE etl.CountryRegion (\r\n    CountryCode CHAR(2)       NOT NULL PRIMARY KEY,\r\n    Country     NVARCHAR(100) NOT NULL,\r\n    Region      NVARCHAR(50)  NOT NULL\r\n)",
+      "parse_failed": false
+    }
+  ]
+}

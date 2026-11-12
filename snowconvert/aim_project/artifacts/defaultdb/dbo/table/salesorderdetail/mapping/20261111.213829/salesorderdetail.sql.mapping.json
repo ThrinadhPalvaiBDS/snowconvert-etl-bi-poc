@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.1",
+  "source_system": "sql",
+  "engine_version": "2.54.0-Pr",
+  "source_file": "defaultdb/dbo/table/salesorderdetail.sql",
+  "source_checksum": "ec386fb21b40f3935b8cbdc8a4d116acd0eb25d22ded24e68121a42d654e31ba",
+  "pairs": [
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlUseStatement",
+      "source_line_start": 1,
+      "source_line_end": 1,
+      "source_text": "USE defaultdb",
+      "targets": [
+        "USE DATABASE <%defaultdb%>"
+      ],
+      "target_file": "defaultdb/dbo/table/salesorderdetail.sql"
+    }
+  ],
+  "nodes": [
+    {
+      "node_type": "DDL_CREATE_TABLE",
+      "depth": 0,
+      "offset": 19,
+      "start_line": 5,
+      "start_column": 0,
+      "end_line": 13,
+      "end_column": 2,
+      "target_tables": [
+        "dbo.salesorderdetail"
+      ],
+      "source_text": "CREATE TABLE dbo.SalesOrderDetail (\n    SalesOrderDetailID INT IDENTITY(1,1) PRIMARY KEY,\n    SalesOrderID    INT           NOT NULL REFERENCES dbo.SalesOrderHeader(SalesOrderID),\n    ProductID       INT           NOT NULL REFERENCES dbo.Product(ProductID),\n    OrderQty        SMALLINT      NOT NULL,\n    UnitPrice       MONEY         NOT NULL,\n    UnitPriceDiscount MONEY       NOT NULL DEFAULT 0,\n    ModifiedDate    DATETIME2(3)  NOT NULL DEFAULT SYSUTCDATETIME()\n)",
+      "parse_failed": false
+    }
+  ]
+}

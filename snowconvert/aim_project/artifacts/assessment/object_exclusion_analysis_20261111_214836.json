@@ -1,0 +1,31 @@
+{
+  "summary": {
+    "report_directory": "C:\\Users\\Thrinadh Palvai\\Downloads\\files\\snowconvert-etl-bi-poc\\snowconvert\\aim_project",
+    "total_objects_found": 17,
+    "temp_staging_objects_count": 0,
+    "deprecated_legacy_objects_count": 0,
+    "testing_objects_count": 0,
+    "duplicate_objects_count": 0,
+    "unique_duplicate_objects_count": 0,
+    "objects_by_schema": [
+      {
+        "schema": "dbo",
+        "object_count": 10
+      },
+      {
+        "schema": "etl",
+        "object_count": 6
+      },
+      {
+        "schema": "PUBLIC",
+        "object_count": 1
+      }
+    ],
+    "objects_with_multiple_versions": 0,
+    "potentially_normal_objects_count": 0,
+    "has_dependency_data": true
+  },
+  "detail_location": "registry",
+  "potentially_misclassified_objects": {},
+  "has_dependency_data": true
+}

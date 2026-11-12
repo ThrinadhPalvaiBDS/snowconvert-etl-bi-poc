@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.1",
+  "source_system": "sql",
+  "engine_version": "2.54.0-Pr",
+  "source_file": "salesdw/etl/table/watermark.sql",
+  "source_checksum": "bd1f3f3e9f6b114c7fa06f50b74f3c769bba73e75f5523ec709c770b5aab8201",
+  "pairs": [
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlUseStatement",
+      "source_line_start": 1,
+      "source_line_end": 1,
+      "source_text": "USE SalesDW",
+      "targets": [
+        "USE DATABASE <%salesdw%>"
+      ],
+      "target_file": "salesdw/etl/table/watermark.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.AnsiSql.AST.SqlBaseIf",
+      "source_line_start": 5,
+      "source_line_end": 9,
+      "source_text": "\r\nIF OBJECT_ID('etl.Watermark') IS NULL\r\nCREATE TABLE etl.Watermark (\r\n    TableName   NVARCHAR(50) NOT NULL PRIMARY KEY,\r\n    LoadDate    DATETIME2(3) NOT NULL\r\n);",
+      "targets": [
+        "CREATE TABLE IF NOT EXISTS etl.Watermark (\r\n   TableName NVARCHAR(50) NOT NULL PRIMARY KEY,\r\n   LoadDate TIMESTAMP_NTZ(3) NOT NULL\r\n)\r\nCOMMENT = '{ \"origin\": \"sf_sc\", \"name\": \"snowconvert\", \"version\": {  \"major\": 2,  \"minor\": 54,  \"patch\": \"0-Pr\" }, \"attributes\": {  \"component\": \"transact\",  \"convertedOn\": \"11-11-2026\",  \"domain\": \"no-domain-provided\",  \"migrationid\": \"XsuhASpUt3+avDxmnPT2Mw==\" }}'"
+      ],
+      "target_file": "salesdw/etl/table/watermark.sql"
+    },
+    {
+      "pair_kind": "absorbed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 6,
+      "source_line_end": 9,
+      "source_text": "CREATE TABLE etl.Watermark (\r\n    TableName   NVARCHAR(50) NOT NULL PRIMARY KEY,\r\n    LoadDate    DATETIME2(3) NOT NULL\r\n);",
+      "targets": [],
+      "target_file": "salesdw/etl/table/watermark.sql"
+    }
+  ],
+  "nodes": [
+    {
+      "node_type": "IF_THEN",
+      "depth": 0,
+      "offset": 18,
+      "start_line": 5,
+      "start_column": 0,
+      "end_line": 9,
+      "end_column": 3,
+      "predicate": "OBJECT_ID('etl.Watermark') IS NULL",
+      "target_tables": [],
+      "source_text": "IF OBJECT_ID('etl.Watermark') IS NULL\r\nCREATE TABLE etl.Watermark (\r\n    TableName   NVARCHAR(50) NOT NULL PRIMARY KEY,\r\n    LoadDate    DATETIME2(3) NOT NULL\r\n);",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DDL_CREATE_TABLE",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 57,
+      "start_line": 6,
+      "start_column": 1,
+      "end_line": 9,
+      "end_column": 2,
+      "target_tables": [
+        "etl.watermark"
+      ],
+      "source_text": "CREATE TABLE etl.Watermark (\r\n    TableName   NVARCHAR(50) NOT NULL PRIMARY KEY,\r\n    LoadDate    DATETIME2(3) NOT NULL\r\n)",
+      "parse_failed": false
+    }
+  ]
+}

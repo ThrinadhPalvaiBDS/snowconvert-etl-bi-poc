@@ -1,0 +1,67 @@
+{
+  "schema_version": "1.0",
+  "generated_at": "2026-11-11T16:18:40.879656Z",
+  "project_name": "aim_project",
+  "source_dialect": "sql_server",
+  "summary": {
+    "total_code_units_scanned": 26,
+    "code_units_with_findings": 0,
+    "total_flags_detected": 0,
+    "total_occurrences": 0,
+    "by_bucket": [
+      {
+        "bucket": "performance_risks",
+        "label": "Performance Risks",
+        "code_units_affected": 0,
+        "total_occurrences": 0,
+        "distinct_flags": 0
+      },
+      {
+        "bucket": "architecture_security",
+        "label": "Architecture \u0026 Security Blockers",
+        "code_units_affected": 0,
+        "total_occurrences": 0,
+        "distinct_flags": 0
+      },
+      {
+        "bucket": "behavior_semantic",
+        "label": "Behavior \u0026 Semantic Risks",
+        "code_units_affected": 0,
+        "total_occurrences": 0,
+        "distinct_flags": 0
+      }
+    ],
+    "by_priority": [
+      {
+        "priority": "critical",
+        "label": "Critical",
+        "code_units_affected": 0,
+        "total_occurrences": 0,
+        "distinct_flags": 0
+      },
+      {
+        "priority": "high",
+        "label": "High",
+        "code_units_affected": 0,
+        "total_occurrences": 0,
+        "distinct_flags": 0
+      },
+      {
+        "priority": "medium",
+        "label": "Medium",
+        "code_units_affected": 0,
+        "total_occurrences": 0,
+        "distinct_flags": 0
+      },
+      {
+        "priority": "low",
+        "label": "Low",
+        "code_units_affected": 0,
+        "total_occurrences": 0,
+        "distinct_flags": 0
+      }
+    ]
+  },
+  "flags": [],
+  "code_units": []
+}

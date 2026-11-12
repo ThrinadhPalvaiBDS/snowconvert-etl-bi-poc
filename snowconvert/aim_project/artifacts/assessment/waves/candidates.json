@@ -1,0 +1,317 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-11T16:24:33.181579Z",
+  "summary": {
+    "maxDownstream": 0,
+    "sinksByTier": {
+      "bi": 0,
+      "etl": 0,
+      "sql": 4
+    },
+    "isolated": 1,
+    "withoutDependencies": 0,
+    "technical": 0,
+    "undeployable": 0,
+    "grouped": 0,
+    "considered": 3,
+    "returned": 3,
+    "returnedByTier": {
+      "bi": 0,
+      "etl": 0,
+      "sql": 3
+    },
+    "truncated": false
+  },
+  "candidates": [
+    {
+      "position": 1,
+      "id": "67bb46d5-3272-485f-897f-b48e35da1924",
+      "label": "vw_SalesByMonth",
+      "tier": "sql",
+      "score": 1,
+      "signals": [
+        {
+          "kind": "cleanConversion",
+          "detail": "All 5 objects convert cleanly",
+          "weight": 1
+        }
+      ],
+      "seeds": [
+        {
+          "id": "67bb46d5-3272-485f-897f-b48e35da1924",
+          "name": "defaultdb.dbo.vw_SalesByMonth",
+          "type": "VIEW",
+          "category": "sql",
+          "platform": "SqlServer",
+          "database": "defaultdb",
+          "schema": "dbo",
+          "isMissing": false,
+          "conversionStatus": "Success",
+          "sourcePath": "source/defaultdb/dbo/view/vw_salesbymonth.sql"
+        }
+      ],
+      "downstreamCount": 0,
+      "newObjects": 5,
+      "metrics": {
+        "objectCount": 5,
+        "sqlObjectCount": 5,
+        "etlCount": 0,
+        "scriptCount": 0,
+        "macroCount": 0,
+        "bteqCount": 0,
+        "biCount": 0,
+        "schemaCount": 1,
+        "databaseCount": 1,
+        "loaderCount": 0,
+        "missingCount": 0,
+        "typeCounts": {
+          "TABLE": 4,
+          "VIEW": 1
+        }
+      },
+      "conversion": {
+        "clean": 5,
+        "requiresAttention": 0,
+        "notConverted": 0,
+        "ewiCount": 0
+      },
+      "reads": {
+        "items": [
+          {
+            "id": "1db5de20-a073-4486-8bd4-87a90e5cb570",
+            "name": "defaultdb.dbo.DimCustomer",
+            "type": "TABLE",
+            "category": "sql",
+            "platform": "SqlServer",
+            "database": "defaultdb",
+            "schema": "dbo",
+            "isMissing": false,
+            "conversionStatus": "Success",
+            "sourcePath": "source/defaultdb/dbo/table/dimcustomer.sql"
+          },
+          {
+            "id": "d5eb3fad-2de4-4da5-8492-b3091fa87d7b",
+            "name": "defaultdb.dbo.DimDate",
+            "type": "TABLE",
+            "category": "sql",
+            "platform": "SqlServer",
+            "database": "defaultdb",
+            "schema": "dbo",
+            "isMissing": false,
+            "conversionStatus": "Success",
+            "sourcePath": "source/defaultdb/dbo/table/dimdate.sql"
+          },
+          {
+            "id": "1c187abf-ca4a-4e9e-8806-6bbab7e37da6",
+            "name": "defaultdb.dbo.DimProduct",
+            "type": "TABLE",
+            "category": "sql",
+            "platform": "SqlServer",
+            "database": "defaultdb",
+            "schema": "dbo",
+            "isMissing": false,
+            "conversionStatus": "Success",
+            "sourcePath": "source/defaultdb/dbo/table/dimproduct.sql"
+          },
+          {
+            "id": "821de612-bddd-462d-8d4e-8c298ddc49a2",
+            "name": "defaultdb.dbo.FactSales",
+            "type": "TABLE",
+            "category": "sql",
+            "platform": "SqlServer",
+            "database": "defaultdb",
+            "schema": "dbo",
+            "isMissing": false,
+            "conversionStatus": "Success",
+            "sourcePath": "source/defaultdb/dbo/table/factsales.sql"
+          }
+        ],
+        "total": 4,
+        "truncated": false
+      },
+      "writes": {
+        "items": [],
+        "total": 0,
+        "truncated": false
+      },
+      "loaders": {
+        "items": [],
+        "total": 0,
+        "truncated": false
+      },
+      "overlaps": []
+    },
+    {
+      "position": 2,
+      "id": "919a7163-e834-49c6-973d-8f4e49660f82",
+      "label": "SalesOrderDetail",
+      "tier": "sql",
+      "score": 1,
+      "signals": [
+        {
+          "kind": "cleanConversion",
+          "detail": "All 4 objects convert cleanly",
+          "weight": 1
+        }
+      ],
+      "seeds": [
+        {
+          "id": "919a7163-e834-49c6-973d-8f4e49660f82",
+          "name": "defaultdb.dbo.SalesOrderDetail",
+          "type": "TABLE",
+          "category": "sql",
+          "platform": "SqlServer",
+          "database": "defaultdb",
+          "schema": "dbo",
+          "isMissing": false,
+          "conversionStatus": "Success",
+          "sourcePath": "source/defaultdb/dbo/table/salesorderdetail.sql"
+        }
+      ],
+      "downstreamCount": 0,
+      "newObjects": 4,
+      "metrics": {
+        "objectCount": 4,
+        "sqlObjectCount": 4,
+        "etlCount": 0,
+        "scriptCount": 0,
+        "macroCount": 0,
+        "bteqCount": 0,
+        "biCount": 0,
+        "schemaCount": 1,
+        "databaseCount": 1,
+        "loaderCount": 0,
+        "missingCount": 0,
+        "typeCounts": {
+          "TABLE": 4
+        }
+      },
+      "conversion": {
+        "clean": 4,
+        "requiresAttention": 0,
+        "notConverted": 0,
+        "ewiCount": 0
+      },
+      "reads": {
+        "items": [
+          {
+            "id": "1d4d6779-f0d0-4dbc-9435-18c30b2524e8",
+            "name": "defaultdb.dbo.Product",
+            "type": "TABLE",
+            "category": "sql",
+            "platform": "SqlServer",
+            "database": "defaultdb",
+            "schema": "dbo",
+            "isMissing": false,
+            "conversionStatus": "Success",
+            "sourcePath": "source/defaultdb/dbo/table/product.sql"
+          },
+          {
+            "id": "0794492e-46a6-4bdf-9a7f-959e47cadb24",
+            "name": "defaultdb.dbo.SalesOrderHeader",
+            "type": "TABLE",
+            "category": "sql",
+            "platform": "SqlServer",
+            "database": "defaultdb",
+            "schema": "dbo",
+            "isMissing": false,
+            "conversionStatus": "Success",
+            "sourcePath": "source/defaultdb/dbo/table/salesorderheader.sql"
+          }
+        ],
+        "total": 2,
+        "truncated": false
+      },
+      "writes": {
+        "items": [],
+        "total": 0,
+        "truncated": false
+      },
+      "loaders": {
+        "items": [],
+        "total": 0,
+        "truncated": false
+      },
+      "overlaps": []
+    },
+    {
+      "position": 3,
+      "id": "20c0bb2b-05ec-4ad4-84a8-6cafdf3a47e8",
+      "label": "usp_Load_SalesDW",
+      "tier": "sql",
+      "score": -1,
+      "signals": [
+        {
+          "kind": "missingObjects",
+          "detail": "Needs 9 objects the project does not hold",
+          "weight": -1
+        }
+      ],
+      "seeds": [
+        {
+          "id": "20c0bb2b-05ec-4ad4-84a8-6cafdf3a47e8",
+          "name": "salesdw.etl.usp_Load_SalesDW",
+          "type": "PROCEDURE",
+          "category": "sql",
+          "platform": "SqlServer",
+          "database": "salesdw",
+          "schema": "etl",
+          "isMissing": false,
+          "conversionStatus": "Require Attention",
+          "sourcePath": "source/salesdw/etl/procedure/usp_load_salesdw.sql"
+        }
+      ],
+      "downstreamCount": 0,
+      "newObjects": 7,
+      "metrics": {
+        "objectCount": 7,
+        "sqlObjectCount": 7,
+        "etlCount": 0,
+        "scriptCount": 0,
+        "macroCount": 0,
+        "bteqCount": 0,
+        "biCount": 0,
+        "schemaCount": 2,
+        "databaseCount": 2,
+        "loaderCount": 0,
+        "missingCount": 9,
+        "typeCounts": {
+          "FUNCTION": 1,
+          "PROCEDURE": 6
+        }
+      },
+      "conversion": {
+        "clean": 6,
+        "requiresAttention": 1,
+        "notConverted": 0,
+        "ewiCount": 1
+      },
+      "reads": {
+        "items": [
+          {
+            "id": "32af992c-c471-4929-b6c9-32f4b2b3e9c9",
+            "name": "SalesOLTP.dbo.SalesOrderHeader",
+            "type": "OTHER",
+            "category": "sql",
+            "database": "SalesOLTP",
+            "schema": "dbo",
+            "isMissing": true
+          }
+        ],
+        "total": 1,
+        "truncated": false
+      },
+      "writes": {
+        "items": [],
+        "total": 0,
+        "truncated": false
+      },
+      "loaders": {
+        "items": [],
+        "total": 0,
+        "truncated": false
+      },
+      "overlaps": []
+    }
+  ]
+}

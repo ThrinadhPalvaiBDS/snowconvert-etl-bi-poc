@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.1",
+  "source_system": "sql",
+  "engine_version": "2.54.0-Pr",
+  "source_file": "defaultdb/dbo/table/product.sql",
+  "source_checksum": "c4296e7e0b7c92f501d24233ff7cf8a8d1e2b35c79d6374f95793f28fc07850c",
+  "pairs": [
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlUseStatement",
+      "source_line_start": 1,
+      "source_line_end": 1,
+      "source_text": "USE defaultdb",
+      "targets": [
+        "USE DATABASE <%defaultdb%>"
+      ],
+      "target_file": "defaultdb/dbo/table/product.sql"
+    }
+  ],
+  "nodes": [
+    {
+      "node_type": "DDL_CREATE_TABLE",
+      "depth": 0,
+      "offset": 19,
+      "start_line": 5,
+      "start_column": 0,
+      "end_line": 15,
+      "end_column": 2,
+      "target_tables": [
+        "dbo.product"
+      ],
+      "source_text": "CREATE TABLE dbo.Product (\n    ProductID       INT IDENTITY(1,1) PRIMARY KEY,\n    SKU             NVARCHAR(30)  NOT NULL,\n    ProductName     NVARCHAR(200) NOT NULL,\n    Category        NVARCHAR(50)  NULL,\n    SubCategory     NVARCHAR(50)  NULL,\n    ListPrice       MONEY         NOT NULL,\n    StandardCost    MONEY         NOT NULL,\n    IsActive        BIT           NOT NULL DEFAULT 1,\n    ModifiedDate    DATETIME2(3)  NOT NULL DEFAULT SYSUTCDATETIME()\n)",
+      "parse_failed": false
+    }
+  ]
+}

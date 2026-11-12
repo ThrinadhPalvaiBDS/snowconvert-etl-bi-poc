@@ -1,0 +1,9 @@
+FILE_NAME,FILE_PATH,FILE_SIZE_BYTES,STATUS,STAGE,ERROR_MESSAGE
+01_oltp_source_ddl.sql,01_oltp_source_ddl.sql,2022,Processed,Succeeded,
+02_DimCustomer.sql,02_DimCustomer.sql,558,Processed,Succeeded,
+02_DimDate.sql,02_DimDate.sql,361,Processed,Succeeded,
+02_DimProduct.sql,02_DimProduct.sql,446,Processed,Succeeded,
+02_FactSales.sql,02_FactSales.sql,659,Processed,Succeeded,
+02_FactSales_Error.sql,02_FactSales_Error.sql,118,Processed,Succeeded,
+02_vw_SalesByMonth.sql,02_vw_SalesByMonth.sql,520,Processed,Succeeded,
+05_legacy_etl_procedures.sql,05_legacy_etl_procedures.sql,19150,Processed,Succeeded,

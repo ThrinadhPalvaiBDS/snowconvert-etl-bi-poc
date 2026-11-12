@@ -1,0 +1,617 @@
+{
+  "schema_version": "1.1",
+  "source_system": "sql",
+  "engine_version": "2.54.0-Pr",
+  "source_file": "salesdw/etl/procedure/usp_load_salesdw.sql",
+  "source_checksum": "850ed5b6db08fda3a5ad5f28e02adee5d3827d6843bdd2ae452f199c702aab7c",
+  "pairs": [
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlUseStatement",
+      "source_line_start": 1,
+      "source_line_end": 1,
+      "source_text": "USE SalesDW",
+      "targets": [
+        "USE DATABASE <%salesdw%>"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "absorbed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 7,
+      "source_line_end": 64,
+      "source_text": "BEGIN\r\n--    SET NOCOUNT ON;\r\n    SET XACT_ABORT ON;\r\n\r\n    DECLARE @RunID UNIQUEIDENTIFIER = NEWID();\r\n    DECLARE @Step NVARCHAR(100), @Rows INT, @Rejected INT;\r\n    DECLARE @MinDate DATE, @MaxDate DATE;\r\n\r\n    BEGIN TRY\r\n        SET @Step = N'Package';\r\n        EXEC etl.usp_LogStep @RunID, @Step, N'Started';\r\n\r\n        -- Make sure every order date has a DimDate row\r\n        SET @Step = N'Load DimDate';\r\n        SELECT @MinDate = CAST(MIN(OrderDate) AS DATE), @MaxDate = CAST(MAX(OrderDate) AS DATE)\r\n        FROM SalesOLTP.dbo.SalesOrderHeader WITH (NOLOCK);\r\n        IF @MinDate IS NOT NULL\r\n        BEGIN\r\n            EXEC etl.usp_Load_DimDate @MinDate, @MaxDate, @Rows OUTPUT;\r\n            EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;\r\n        END;\r\n\r\n        -- Sequence container: dimensions\r\n        SET @Step = N'DFT - DimProduct';\r\n        EXEC etl.usp_Load_DimProduct @Rows OUTPUT;\r\n        EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;\r\n\r\n        SET @Step = N'DFT - DimCustomer';\r\n        EXEC etl.usp_Load_DimCustomer @Rows OUTPUT;\r\n        EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;\r\n\r\n        -- Fact + watermark\r\n        SET @Step = N'DFT - FactSales';\r\n        EXEC etl.usp_Load_FactSales @Rows OUTPUT, @Rejected OUTPUT;\r\n        EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;\r\n        EXEC etl.usp_LogStep @RunID, N'FactSales rejected rows', N'Succeeded', @Rejected;\r\n\r\n        EXEC etl.usp_LogStep @RunID, N'Package', N'Succeeded';\r\n    END TRY\r\n    BEGIN CATCH\r\n        IF @@TRANCOUNT > 0 ROLLBACK;\r\n\r\n        DECLARE @Err NVARCHAR(4000) =\r\n            CONCAT(N'Step \"', @Step, N'\" failed: ', ERROR_MESSAGE(),\r\n                   N' (error ', ERROR_NUMBER(), N', line ', ERROR_LINE(), N')');\r\n        EXEC etl.usp_LogStep @RunID, @Step, N'Failed', NULL, @Err;\r\n\r\n        -- OnError event handler: Send Mail Task\r\n        DECLARE @Subject NVARCHAR(255) = CONCAT(N'Load_SalesDW FAILED at ', FORMAT(SYSDATETIME(), 'yyyy-MM-dd HH:mm'));\r\n--        EXEC msdb.dbo.sp_send_dbmail\r\n--             @profile_name = N'DataOps',\r\n--             @recipients   = N'thrinadhp@booleandata.ai',\r\n--             @subject      = @Subject,\r\n--             @body         = @Err;\r\n\r\n        THROW;\r\n    END CATCH;\r\nEND;",
+      "targets": [],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "unsupported",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 8,
+      "source_line_end": 8,
+      "source_text": "--    SET NOCOUNT ON;",
+      "targets": [
+        "--    SET NOCOUNT ON;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "pass_through",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 9,
+      "source_line_end": 9,
+      "source_text": "    SET XACT_ABORT ON;",
+      "targets": [
+        "    SET XACT_ABORT ON;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 11,
+      "source_line_end": 11,
+      "source_text": "\r\n    DECLARE @RunID UNIQUEIDENTIFIER = NEWID();",
+      "targets": [
+        "RUNID := UUID_STRING();"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "absorbed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 12,
+      "source_line_end": 12,
+      "source_text": "    DECLARE @Step NVARCHAR(100), @Rows INT, @Rejected INT;",
+      "targets": [],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "absorbed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 13,
+      "source_line_end": 13,
+      "source_text": "    DECLARE @MinDate DATE, @MaxDate DATE;",
+      "targets": [],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 15,
+      "source_line_end": 63,
+      "source_text": "\r\n    BEGIN TRY\r\n        SET @Step = N'Package';\r\n        EXEC etl.usp_LogStep @RunID, @Step, N'Started';\r\n\r\n        -- Make sure every order date has a DimDate row\r\n        SET @Step = N'Load DimDate';\r\n        SELECT @MinDate = CAST(MIN(OrderDate) AS DATE), @MaxDate = CAST(MAX(OrderDate) AS DATE)\r\n        FROM SalesOLTP.dbo.SalesOrderHeader WITH (NOLOCK);\r\n        IF @MinDate IS NOT NULL\r\n        BEGIN\r\n            EXEC etl.usp_Load_DimDate @MinDate, @MaxDate, @Rows OUTPUT;\r\n            EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;\r\n        END;\r\n\r\n        -- Sequence container: dimensions\r\n        SET @Step = N'DFT - DimProduct';\r\n        EXEC etl.usp_Load_DimProduct @Rows OUTPUT;\r\n        EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;\r\n\r\n        SET @Step = N'DFT - DimCustomer';\r\n        EXEC etl.usp_Load_DimCustomer @Rows OUTPUT;\r\n        EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;\r\n\r\n        -- Fact + watermark\r\n        SET @Step = N'DFT - FactSales';\r\n        EXEC etl.usp_Load_FactSales @Rows OUTPUT, @Rejected OUTPUT;\r\n        EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;\r\n        EXEC etl.usp_LogStep @RunID, N'FactSales rejected rows', N'Succeeded', @Rejected;\r\n\r\n        EXEC etl.usp_LogStep @RunID, N'Package', N'Succeeded';\r\n    END TRY\r\n    BEGIN CATCH\r\n        IF @@TRANCOUNT > 0 ROLLBACK;\r\n\r\n        DECLARE @Err NVARCHAR(4000) =\r\n            CONCAT(N'Step \"', @Step, N'\" failed: ', ERROR_MESSAGE(),\r\n                   N' (error ', ERROR_NUMBER(), N', line ', ERROR_LINE(), N')');\r\n        EXEC etl.usp_LogStep @RunID, @Step, N'Failed', NULL, @Err;\r\n\r\n        -- OnError event handler: Send Mail Task\r\n        DECLARE @Subject NVARCHAR(255) = CONCAT(N'Load_SalesDW FAILED at ', FORMAT(SYSDATETIME(), 'yyyy-MM-dd HH:mm'));\r\n--        EXEC msdb.dbo.sp_send_dbmail\r\n--             @profile_name = N'DataOps',\r\n--             @recipients   = N'thrinadhp@booleandata.ai',\r\n--             @subject      = @Subject,\r\n--             @body         = @Err;\r\n\r\n        THROW;\r\n    END CATCH;",
+      "targets": [
+        "\r\n-- OnError event handler: Send Mail Task\r\nBEGIN\r\n   STEP := 'Package';\r\n   CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => :STEP, STATUS => 'Started');\r\n\r\n   -- Make sure every order date has a DimDate row\r\n   STEP := 'Load DimDate';\r\n   LET MINDATE_RESULTSET_1 RESULTSET :=\r\n   (\r\n      SELECT\r\n         COALESCE(TRY_TO_DATE(TRIM(TO_VARCHAR(MIN(OrderDate))), 'YYYYMMDD'), IFF(REGEXP_LIKE(TRIM(TO_VARCHAR(MIN(OrderDate))), '^[0-9]{6}$'), IFF(TRY_TO_NUMBER(LEFT(TRIM(TO_VARCHAR(MIN(OrderDate))), 2)) > 49, TRY_TO_DATE('19' || TRIM(TO_VARCHAR(MIN(OrderDate))), 'YYYYMMDD'), TRY_TO_DATE('20' || TRIM(TO_VARCHAR(MIN(OrderDate))), 'YYYYMMDD')), null), IFF(REGEXP_LIKE(TRIM(TO_VARCHAR(MIN(OrderDate))), '^[0-9]{4}$'), TRY_TO_DATE(TRIM(TO_VARCHAR(MIN(OrderDate))) || '0101', 'YYYYMMDD'), null), IFF(REGEXP_LIKE(TRIM(TO_VARCHAR(MIN(OrderDate))), '^[0-9]+$'), null, TO_DATE(MIN(OrderDate)))) AS MINDATE_VALUE,\r\n         COALESCE(TRY_TO_DATE(TRIM(TO_VARCHAR(MAX(OrderDate))), 'YYYYMMDD'), IFF(REGEXP_LIKE(TRIM(TO_VARCHAR(MAX(OrderDate))), '^[0-9]{6}$'), IFF(TRY_TO_NUMBER(LEFT(TRIM(TO_VARCHAR(MAX(OrderDate))), 2)) > 49, TRY_TO_DATE('19' || TRIM(TO_VARCHAR(MAX(OrderDate))), 'YYYYMMDD'), TRY_TO_DATE('20' || TRIM(TO_VARCHAR(MAX(OrderDate))), 'YYYYMMDD')), null), IFF(REGEXP_LIKE(TRIM(TO_VARCHAR(MAX(OrderDate))), '^[0-9]{4}$'), TRY_TO_DATE(TRIM(TO_VARCHAR(MAX(OrderDate))) || '0101', 'YYYYMMDD'), null), IFF(REGEXP_LIKE(TRIM(TO_VARCHAR(MAX(OrderDate))), '^[0-9]+$'), null, TO_DATE(MAX(OrderDate)))) AS MAXDATE_VALUE\r\n      FROM\r\n         <%salesoltp%>.dbo.SalesOrderHeader\r\n   );\r\n   FOR MINDATE_ROW_1 IN MINDATE_RESULTSET_1 DO\r\n      MINDATE := MINDATE_ROW_1.MINDATE_VALUE;\r\n      MAXDATE := MINDATE_ROW_1.MAXDATE_VALUE;\r\n   END FOR;\r\n   IF (:MINDATE IS NOT NULL) THEN\r\n      BEGIN\r\n         CALL <%salesdw%>.etl.usp_Load_DimDate(:MINDATE, :MAXDATE, :_ROWS);\r\n         CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => :STEP, STATUS => 'Succeeded', ROWSAFFECTED => :_ROWS);\r\n      END;\r\n   END IF;\r\n        -- Sequence container: dimensions\r\n   STEP := 'DFT - DimProduct';\r\n   CALL <%salesdw%>.etl.usp_Load_DimProduct(:_ROWS);\r\n   CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => :STEP, STATUS => 'Succeeded', ROWSAFFECTED => :_ROWS);\r\n   STEP := 'DFT - DimCustomer';\r\n   CALL <%salesdw%>.etl.usp_Load_DimCustomer(:_ROWS);\r\n   CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => :STEP, STATUS => 'Succeeded', ROWSAFFECTED => :_ROWS);\r\n\r\n   -- Fact + watermark\r\n   STEP := 'DFT - FactSales';\r\n   CALL <%salesdw%>.etl.usp_Load_FactSales(:_ROWS, :REJECTED);\r\n   CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => :STEP, STATUS => 'Succeeded', ROWSAFFECTED => :_ROWS);\r\n   CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => 'FactSales rejected rows', STATUS => 'Succeeded', ROWSAFFECTED => :REJECTED);\r\n   CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => 'Package', STATUS => 'Succeeded');\r\nEXCEPTION\r\n   WHEN OTHER THEN\r\n      IF (CURRENT_TRANSACTION() IS NOT NULL) THEN\r\n         BEGIN\r\n            ROLLBACK;\r\n         EXCEPTION\r\n            WHEN OTHER THEN\r\n               NULL;\r\n         END;\r\n      END IF;\r\n      ERR := LEFT(CONCAT('Step \"', COALESCE(:STEP :: STRING, ''), '\" failed: ', COALESCE(:SQLERRM :: STRING, ''), ' (error ', COALESCE(:SQLCODE :: STRING, ''), ', line ', '', ')'), 4000);\r\n      CALL <%salesdw%>.etl.usp_LogStep(:RUNID, :STEP, 'Failed', NULL, :ERR);\r\n      SUBJECT := CONCAT('Load_SalesDW FAILED at ', COALESCE(TO_CHAR(CURRENT_TIMESTAMP(), 'YYYY-MM-DD HH24:MI') :: STRING, ''));\r\n--      EXEC msdb.dbo.sp_send_dbmail\r\n--           @profile_name = N'DataOps',\r\n--           @recipients   = N'thrinadhp@booleandata.ai',\r\n--           @subject      = @Subject,\r\n--           @body         = @Err;\r\n      CALL SYSTEM$SEND_SNOWFLAKE_NOTIFICATION(SNOWFLAKE.NOTIFICATION.TEXT_PLAIN(:ERR), SNOWFLAKE.NOTIFICATION.EMAIL_INTEGRATION_CONFIG('<your_email_notification_integration>', :SUBJECT, STRTOK_TO_ARRAY('thrinadhp@booleandata.ai', ';')));\r\n      RAISE;\r\nEND;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 16,
+      "source_line_end": 16,
+      "source_text": "        SET @Step = N'Package';",
+      "targets": [
+        "STEP := 'Package';"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 17,
+      "source_line_end": 17,
+      "source_text": "        EXEC etl.usp_LogStep @RunID, @Step, N'Started';",
+      "targets": [
+        "CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => :STEP, STATUS => 'Started');"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 20,
+      "source_line_end": 20,
+      "source_text": "\r\n        -- Make sure every order date has a DimDate row\r\n        SET @Step = N'Load DimDate';",
+      "targets": [
+        "\r\n-- Make sure every order date has a DimDate row\r\nSTEP := 'Load DimDate';"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 21,
+      "source_line_end": 22,
+      "source_text": "        SELECT @MinDate = CAST(MIN(OrderDate) AS DATE), @MaxDate = CAST(MAX(OrderDate) AS DATE)\r\n        FROM SalesOLTP.dbo.SalesOrderHeader WITH (NOLOCK);",
+      "targets": [
+        "LET MINDATE_RESULTSET_1 RESULTSET :=\r\n(\r\n   SELECT\r\n      COALESCE(TRY_TO_DATE(TRIM(TO_VARCHAR(MIN(OrderDate))), 'YYYYMMDD'), IFF(REGEXP_LIKE(TRIM(TO_VARCHAR(MIN(OrderDate))), '^[0-9]{6}$'), IFF(TRY_TO_NUMBER(LEFT(TRIM(TO_VARCHAR(MIN(OrderDate))), 2)) > 49, TRY_TO_DATE('19' || TRIM(TO_VARCHAR(MIN(OrderDate))), 'YYYYMMDD'), TRY_TO_DATE('20' || TRIM(TO_VARCHAR(MIN(OrderDate))), 'YYYYMMDD')), null), IFF(REGEXP_LIKE(TRIM(TO_VARCHAR(MIN(OrderDate))), '^[0-9]{4}$'), TRY_TO_DATE(TRIM(TO_VARCHAR(MIN(OrderDate))) || '0101', 'YYYYMMDD'), null), IFF(REGEXP_LIKE(TRIM(TO_VARCHAR(MIN(OrderDate))), '^[0-9]+$'), null, TO_DATE(MIN(OrderDate)))) AS MINDATE_VALUE,\r\n      COALESCE(TRY_TO_DATE(TRIM(TO_VARCHAR(MAX(OrderDate))), 'YYYYMMDD'), IFF(REGEXP_LIKE(TRIM(TO_VARCHAR(MAX(OrderDate))), '^[0-9]{6}$'), IFF(TRY_TO_NUMBER(LEFT(TRIM(TO_VARCHAR(MAX(OrderDate))), 2)) > 49, TRY_TO_DATE('19' || TRIM(TO_VARCHAR(MAX(OrderDate))), 'YYYYMMDD'), TRY_TO_DATE('20' || TRIM(TO_VARCHAR(MAX(OrderDate))), 'YYYYMMDD')), null), IFF(REGEXP_LIKE(TRIM(TO_VARCHAR(MAX(OrderDate))), '^[0-9]{4}$'), TRY_TO_DATE(TRIM(TO_VARCHAR(MAX(OrderDate))) || '0101', 'YYYYMMDD'), null), IFF(REGEXP_LIKE(TRIM(TO_VARCHAR(MAX(OrderDate))), '^[0-9]+$'), null, TO_DATE(MAX(OrderDate)))) AS MAXDATE_VALUE\r\n   FROM\r\n      <%salesoltp%>.dbo.SalesOrderHeader\r\n);\r\nFOR MINDATE_ROW_1 IN MINDATE_RESULTSET_1 DO\r\n   MINDATE := MINDATE_ROW_1.MINDATE_VALUE;\r\n   MAXDATE := MINDATE_ROW_1.MAXDATE_VALUE;\r\nEND FOR;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 23,
+      "source_line_end": 27,
+      "source_text": "        IF @MinDate IS NOT NULL\r\n        BEGIN\r\n            EXEC etl.usp_Load_DimDate @MinDate, @MaxDate, @Rows OUTPUT;\r\n            EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;\r\n        END;",
+      "targets": [
+        "IF (:MINDATE IS NOT NULL) THEN\r\n   BEGIN\r\n      CALL <%salesdw%>.etl.usp_Load_DimDate(:MINDATE, :MAXDATE, :_ROWS);\r\n      CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => :STEP, STATUS => 'Succeeded', ROWSAFFECTED => :_ROWS);\r\n   END;\r\nEND IF;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 24,
+      "source_line_end": 27,
+      "source_text": "        BEGIN\r\n            EXEC etl.usp_Load_DimDate @MinDate, @MaxDate, @Rows OUTPUT;\r\n            EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;\r\n        END;",
+      "targets": [
+        "        BEGIN\r\n           CALL <%salesdw%>.etl.usp_Load_DimDate(:MINDATE, :MAXDATE, :_ROWS);\r\n           CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => :STEP, STATUS => 'Succeeded', ROWSAFFECTED => :_ROWS);\r\n        END;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 25,
+      "source_line_end": 25,
+      "source_text": "            EXEC etl.usp_Load_DimDate @MinDate, @MaxDate, @Rows OUTPUT;",
+      "targets": [
+        "CALL <%salesdw%>.etl.usp_Load_DimDate(:MINDATE, :MAXDATE, :_ROWS);"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 26,
+      "source_line_end": 26,
+      "source_text": "            EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;",
+      "targets": [
+        "CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => :STEP, STATUS => 'Succeeded', ROWSAFFECTED => :_ROWS);"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 30,
+      "source_line_end": 30,
+      "source_text": "\r\n        -- Sequence container: dimensions\r\n        SET @Step = N'DFT - DimProduct';",
+      "targets": [
+        "\r\n-- Sequence container: dimensions\r\nSTEP := 'DFT - DimProduct';"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 31,
+      "source_line_end": 31,
+      "source_text": "        EXEC etl.usp_Load_DimProduct @Rows OUTPUT;",
+      "targets": [
+        "CALL <%salesdw%>.etl.usp_Load_DimProduct(:_ROWS);"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 32,
+      "source_line_end": 32,
+      "source_text": "        EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;",
+      "targets": [
+        "CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => :STEP, STATUS => 'Succeeded', ROWSAFFECTED => :_ROWS);"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 34,
+      "source_line_end": 34,
+      "source_text": "\r\n        SET @Step = N'DFT - DimCustomer';",
+      "targets": [
+        "STEP := 'DFT - DimCustomer';"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 35,
+      "source_line_end": 35,
+      "source_text": "        EXEC etl.usp_Load_DimCustomer @Rows OUTPUT;",
+      "targets": [
+        "CALL <%salesdw%>.etl.usp_Load_DimCustomer(:_ROWS);"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 36,
+      "source_line_end": 36,
+      "source_text": "        EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;",
+      "targets": [
+        "CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => :STEP, STATUS => 'Succeeded', ROWSAFFECTED => :_ROWS);"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 39,
+      "source_line_end": 39,
+      "source_text": "\r\n        -- Fact + watermark\r\n        SET @Step = N'DFT - FactSales';",
+      "targets": [
+        "\r\n-- Fact + watermark\r\nSTEP := 'DFT - FactSales';"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 40,
+      "source_line_end": 40,
+      "source_text": "        EXEC etl.usp_Load_FactSales @Rows OUTPUT, @Rejected OUTPUT;",
+      "targets": [
+        "CALL <%salesdw%>.etl.usp_Load_FactSales(:_ROWS, :REJECTED);"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 41,
+      "source_line_end": 41,
+      "source_text": "        EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;",
+      "targets": [
+        "CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => :STEP, STATUS => 'Succeeded', ROWSAFFECTED => :_ROWS);"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 42,
+      "source_line_end": 42,
+      "source_text": "        EXEC etl.usp_LogStep @RunID, N'FactSales rejected rows', N'Succeeded', @Rejected;",
+      "targets": [
+        "CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => 'FactSales rejected rows', STATUS => 'Succeeded', ROWSAFFECTED => :REJECTED);"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 44,
+      "source_line_end": 44,
+      "source_text": "\r\n        EXEC etl.usp_LogStep @RunID, N'Package', N'Succeeded';",
+      "targets": [
+        "CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => 'Package', STATUS => 'Succeeded');"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 47,
+      "source_line_end": 47,
+      "source_text": "        IF @@TRANCOUNT > 0 ROLLBACK;",
+      "targets": [
+        "IF (CURRENT_TRANSACTION() IS NOT NULL) THEN\r\n   BEGIN\r\n      ROLLBACK;\r\n   EXCEPTION\r\n      WHEN OTHER THEN\r\n         NULL;\r\n   END;\r\nEND IF;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 49,
+      "source_line_end": 51,
+      "source_text": "\r\n        DECLARE @Err NVARCHAR(4000) =\r\n            CONCAT(N'Step \"', @Step, N'\" failed: ', ERROR_MESSAGE(),\r\n                   N' (error ', ERROR_NUMBER(), N', line ', ERROR_LINE(), N')');",
+      "targets": [
+        "ERR := LEFT(CONCAT('Step \"', COALESCE(:STEP :: STRING, ''), '\" failed: ', COALESCE(:SQLERRM :: STRING, ''), ' (error ', COALESCE(:SQLCODE :: STRING, ''), ', line ', '', ')'), 4000);"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 52,
+      "source_line_end": 52,
+      "source_text": "        EXEC etl.usp_LogStep @RunID, @Step, N'Failed', NULL, @Err;",
+      "targets": [
+        "CALL <%salesdw%>.etl.usp_LogStep(:RUNID, :STEP, 'Failed', NULL, :ERR);"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 55,
+      "source_line_end": 55,
+      "source_text": "\r\n        -- OnError event handler: Send Mail Task\r\n        DECLARE @Subject NVARCHAR(255) = CONCAT(N'Load_SalesDW FAILED at ', FORMAT(SYSDATETIME(), 'yyyy-MM-dd HH:mm'));",
+      "targets": [
+        "SUBJECT := CONCAT('Load_SalesDW FAILED at ', COALESCE(TO_CHAR(CURRENT_TIMESTAMP(), 'YYYY-MM-DD HH24:MI') :: STRING, ''));"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 56,
+      "source_line_end": 60,
+      "source_text": "--        EXEC msdb.dbo.sp_send_dbmail\r\n--             @profile_name = N'DataOps',\r\n--             @recipients   = N'thrinadhp@booleandata.ai',\r\n--             @subject      = @Subject,\r\n--             @body         = @Err;",
+      "targets": [
+        "--        EXEC msdb.dbo.sp_send_dbmail\r\n--             @profile_name = N'DataOps',\r\n--             @recipients   = N'thrinadhp@booleandata.ai',\r\n--             @subject      = @Subject,\r\n--             @body         = @Err;",
+        "CALL SYSTEM$SEND_SNOWFLAKE_NOTIFICATION(SNOWFLAKE.NOTIFICATION.TEXT_PLAIN(:ERR), SNOWFLAKE.NOTIFICATION.EMAIL_INTEGRATION_CONFIG('<your_email_notification_integration>', :SUBJECT, STRTOK_TO_ARRAY('thrinadhp@booleandata.ai', ';')));"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 62,
+      "source_line_end": 62,
+      "source_text": "\r\n        THROW;",
+      "targets": [
+        "RAISE;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_salesdw.sql"
+    }
+  ],
+  "nodes": [
+    {
+      "node_type": "DDL_PROCEDURE",
+      "depth": 0,
+      "offset": 18,
+      "start_line": 5,
+      "start_column": 0,
+      "end_line": 64,
+      "end_column": 5,
+      "target_tables": [],
+      "source_text": "CREATE OR ALTER PROCEDURE etl.usp_Load_SalesDW\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    SET XACT_ABORT ON;\r\n\r\n    DECLARE @RunID UNIQUEIDENTIFIER = NEWID();\r\n    DECLARE @Step NVARCHAR(100), @Rows INT, @Rejected INT;\r\n    DECLARE @MinDate DATE, @MaxDate DATE;\r\n\r\n    BEGIN TRY\r\n        SET @Step = N'Package';\r\n        EXEC etl.usp_LogStep @RunID, @Step, N'Started';\r\n\r\n        -- Make sure every order date has a DimDate row\r\n        SET @Step = N'Load DimDate';\r\n        SELECT @MinDate = CAST(MIN(OrderDate) AS DATE), @MaxDate = CAST(MAX(OrderDate) AS DATE)\r\n        FROM SalesOLTP.dbo.SalesOrderHeader WITH (NOLOCK);\r\n        IF @MinDate IS NOT NULL\r\n        BEGIN\r\n            EXEC etl.usp_Load_DimDate @MinDate, @MaxDate, @Rows OUTPUT;\r\n            EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;\r\n        END;\r\n\r\n        -- Sequence container: dimensions\r\n        SET @Step = N'DFT - DimProduct';\r\n        EXEC etl.usp_Load_DimProduct @Rows OUTPUT;\r\n        EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;\r\n\r\n        SET @Step = N'DFT - DimCustomer';\r\n        EXEC etl.usp_Load_DimCustomer @Rows OUTPUT;\r\n        EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;\r\n\r\n        -- Fact + watermark\r\n        SET @Step = N'DFT - FactSales';\r\n        EXEC etl.usp_Load_FactSales @Rows OUTPUT, @Rejected OUTPUT;\r\n        EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;\r\n        EXEC etl.usp_LogStep @RunID, N'FactSales rejected rows', N'Succeeded', @Rejected;\r\n\r\n        EXEC etl.usp_LogStep @RunID, N'Package', N'Succeeded';\r\n    END TRY\r\n    BEGIN CATCH\r\n        IF @@TRANCOUNT > 0 ROLLBACK;\r\n\r\n        DECLARE @Err NVARCHAR(4000) =\r\n            CONCAT(N'Step \"', @Step, N'\" failed: ', ERROR_MESSAGE(),\r\n                   N' (error ', ERROR_NUMBER(), N', line ', ERROR_LINE(), N')');\r\n        EXEC etl.usp_LogStep @RunID, @Step, N'Failed', NULL, @Err;\r\n\r\n        -- OnError event handler: Send Mail Task\r\n        DECLARE @Subject NVARCHAR(255) = CONCAT(N'Load_SalesDW FAILED at ', FORMAT(SYSDATETIME(), 'yyyy-MM-dd HH:mm'));\r\n        EXEC msdb.dbo.sp_send_dbmail\r\n             @profile_name = N'DataOps',\r\n             @recipients   = N'thrinadhp@booleandata.ai',\r\n             @subject      = @Subject,\r\n             @body         = @Err;\r\n\r\n        THROW;\r\n    END CATCH;\r\nEND;",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DYNAMIC_SQL",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 333,
+      "start_line": 17,
+      "start_column": 9,
+      "end_line": 17,
+      "end_column": 55,
+      "target_tables": [],
+      "source_text": "EXEC etl.usp_LogStep @RunID, @Step, N'Started'",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DQL_SELECT",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 487,
+      "start_line": 21,
+      "start_column": 9,
+      "end_line": 22,
+      "end_column": 58,
+      "target_tables": [],
+      "source_text": "SELECT @MinDate = CAST(MIN(OrderDate) AS DATE), @MaxDate = CAST(MAX(OrderDate) AS DATE)\r\n        FROM SalesOLTP.dbo.SalesOrderHeader WITH (NOLOCK)",
+      "parse_failed": false
+    },
+    {
+      "node_type": "IF_THEN",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 644,
+      "start_line": 23,
+      "start_column": 9,
+      "end_line": 27,
+      "end_column": 13,
+      "predicate": "@MinDate IS NOT NULL",
+      "target_tables": [],
+      "source_text": "IF @MinDate IS NOT NULL\r\n        BEGIN\r\n            EXEC etl.usp_Load_DimDate @MinDate, @MaxDate, @Rows OUTPUT;\r\n            EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;\r\n        END;",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DYNAMIC_SQL",
+      "parent_index": 3,
+      "depth": 2,
+      "offset": 696,
+      "start_line": 25,
+      "start_column": 13,
+      "end_line": 25,
+      "end_column": 71,
+      "target_tables": [],
+      "source_text": "EXEC etl.usp_Load_DimDate @MinDate, @MaxDate, @Rows OUTPUT",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DYNAMIC_SQL",
+      "parent_index": 3,
+      "depth": 2,
+      "offset": 769,
+      "start_line": 26,
+      "start_column": 13,
+      "end_line": 26,
+      "end_column": 68,
+      "target_tables": [],
+      "source_text": "EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DYNAMIC_SQL",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 936,
+      "start_line": 31,
+      "start_column": 9,
+      "end_line": 31,
+      "end_column": 50,
+      "target_tables": [],
+      "source_text": "EXEC etl.usp_Load_DimProduct @Rows OUTPUT",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DYNAMIC_SQL",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 988,
+      "start_line": 32,
+      "start_column": 9,
+      "end_line": 32,
+      "end_column": 64,
+      "target_tables": [],
+      "source_text": "EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DYNAMIC_SQL",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 1099,
+      "start_line": 35,
+      "start_column": 9,
+      "end_line": 35,
+      "end_column": 51,
+      "target_tables": [],
+      "source_text": "EXEC etl.usp_Load_DimCustomer @Rows OUTPUT",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DYNAMIC_SQL",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 1152,
+      "start_line": 36,
+      "start_column": 9,
+      "end_line": 36,
+      "end_column": 64,
+      "target_tables": [],
+      "source_text": "EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DYNAMIC_SQL",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 1290,
+      "start_line": 40,
+      "start_column": 9,
+      "end_line": 40,
+      "end_column": 67,
+      "target_tables": [],
+      "source_text": "EXEC etl.usp_Load_FactSales @Rows OUTPUT, @Rejected OUTPUT",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DYNAMIC_SQL",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 1359,
+      "start_line": 41,
+      "start_column": 9,
+      "end_line": 41,
+      "end_column": 64,
+      "target_tables": [],
+      "source_text": "EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DYNAMIC_SQL",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 1425,
+      "start_line": 42,
+      "start_column": 9,
+      "end_line": 42,
+      "end_column": 89,
+      "target_tables": [],
+      "source_text": "EXEC etl.usp_LogStep @RunID, N'FactSales rejected rows', N'Succeeded', @Rejected",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DYNAMIC_SQL",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 1518,
+      "start_line": 44,
+      "start_column": 9,
+      "end_line": 44,
+      "end_column": 62,
+      "target_tables": [],
+      "source_text": "EXEC etl.usp_LogStep @RunID, N'Package', N'Succeeded'",
+      "parse_failed": false
+    },
+    {
+      "node_type": "EXCEPTION_HANDLER",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 1612,
+      "start_line": 47,
+      "start_column": 9,
+      "end_line": 47,
+      "end_column": 37,
+      "target_tables": [],
+      "source_text": "IF @@TRANCOUNT > 0 ROLLBACK;",
+      "parse_failed": false
+    },
+    {
+      "node_type": "IF_THEN",
+      "parent_index": 14,
+      "depth": 2,
+      "offset": 1612,
+      "start_line": 47,
+      "start_column": 9,
+      "end_line": 47,
+      "end_column": 37,
+      "predicate": "@@TRANCOUNT > 0",
+      "target_tables": [],
+      "source_text": "IF @@TRANCOUNT > 0 ROLLBACK;",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DYNAMIC_SQL",
+      "parent_index": 14,
+      "depth": 2,
+      "offset": 1843,
+      "start_line": 52,
+      "start_column": 9,
+      "end_line": 52,
+      "end_column": 66,
+      "target_tables": [],
+      "source_text": "EXEC etl.usp_LogStep @RunID, @Step, N'Failed', NULL, @Err",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DYNAMIC_SQL",
+      "parent_index": 14,
+      "depth": 2,
+      "offset": 2084,
+      "start_line": 56,
+      "start_column": 9,
+      "end_line": 60,
+      "end_column": 34,
+      "target_tables": [],
+      "source_text": "EXEC msdb.dbo.sp_send_dbmail\r\n             @profile_name = N'DataOps',\r\n             @recipients   = N'thrinadhp@booleandata.ai',\r\n             @subject      = @Subject,\r\n             @body         = @Err",
+      "parse_failed": false
+    },
+    {
+      "node_type": "THROW",
+      "parent_index": 14,
+      "depth": 2,
+      "offset": 2301,
+      "start_line": 62,
+      "start_column": 9,
+      "end_line": 62,
+      "end_column": 14,
+      "target_tables": [],
+      "source_text": "THROW",
+      "parse_failed": false
+    }
+  ]
+}

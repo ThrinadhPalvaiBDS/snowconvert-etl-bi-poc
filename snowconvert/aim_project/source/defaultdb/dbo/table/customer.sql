@@ -1,0 +1,16 @@
+USE defaultdb
+
+GO
+
+CREATE TABLE dbo.Customer (
+    CustomerID      INT IDENTITY(1,1) PRIMARY KEY,
+    CustomerCode    NVARCHAR(20)  NOT NULL,
+    FirstName       NVARCHAR(50)  NOT NULL,
+    LastName        NVARCHAR(50)  NOT NULL,
+    Email           NVARCHAR(255) NULL,
+    Phone           NVARCHAR(30)  NULL,
+    City            NVARCHAR(100) NULL,
+    CountryCode     CHAR(2)       NULL,
+    Segment         NVARCHAR(20)  NULL,
+    ModifiedDate    DATETIME2(3)  NOT NULL DEFAULT SYSUTCDATETIME()
+);

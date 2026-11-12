@@ -1,0 +1,410 @@
+FileId,Keyword,Count
+\defaultdb\dbo\table\customer.sql,char,1
+\defaultdb\dbo\table\customer.sql,create table,1
+\defaultdb\dbo\table\customer.sql,datetime2,1
+\defaultdb\dbo\table\customer.sql,default,1
+\defaultdb\dbo\table\customer.sql,go,1
+\defaultdb\dbo\table\customer.sql,identity,1
+\defaultdb\dbo\table\customer.sql,int,1
+\defaultdb\dbo\table\customer.sql,not null,4
+\defaultdb\dbo\table\customer.sql,null,5
+\defaultdb\dbo\table\customer.sql,nvarchar,7
+\defaultdb\dbo\table\customer.sql,primary key,1
+\defaultdb\dbo\table\customer.sql,segment,1
+\defaultdb\dbo\table\customer.sql,sysutcdatetime,1
+\defaultdb\dbo\table\customer.sql,use,1
+\defaultdb\dbo\table\dimcustomer.sql,bit,1
+\defaultdb\dbo\table\dimcustomer.sql,create table,1
+\defaultdb\dbo\table\dimcustomer.sql,datetime2,2
+\defaultdb\dbo\table\dimcustomer.sql,go,1
+\defaultdb\dbo\table\dimcustomer.sql,identity,1
+\defaultdb\dbo\table\dimcustomer.sql,int,2
+\defaultdb\dbo\table\dimcustomer.sql,not null,5
+\defaultdb\dbo\table\dimcustomer.sql,null,6
+\defaultdb\dbo\table\dimcustomer.sql,nvarchar,7
+\defaultdb\dbo\table\dimcustomer.sql,primary key,1
+\defaultdb\dbo\table\dimcustomer.sql,segment,1
+\defaultdb\dbo\table\dimcustomer.sql,use,1
+\defaultdb\dbo\table\dimdate.sql,bit,1
+\defaultdb\dbo\table\dimdate.sql,create table,1
+\defaultdb\dbo\table\dimdate.sql,date,2
+\defaultdb\dbo\table\dimdate.sql,dayofweek,1
+\defaultdb\dbo\table\dimdate.sql,go,1
+\defaultdb\dbo\table\dimdate.sql,int,1
+\defaultdb\dbo\table\dimdate.sql,month,1
+\defaultdb\dbo\table\dimdate.sql,not null,7
+\defaultdb\dbo\table\dimdate.sql,nvarchar,1
+\defaultdb\dbo\table\dimdate.sql,primary key,1
+\defaultdb\dbo\table\dimdate.sql,quarter,1
+\defaultdb\dbo\table\dimdate.sql,smallint,1
+\defaultdb\dbo\table\dimdate.sql,tinyint,3
+\defaultdb\dbo\table\dimdate.sql,use,1
+\defaultdb\dbo\table\dimdate.sql,year,1
+\defaultdb\dbo\table\dimproduct.sql,bit,1
+\defaultdb\dbo\table\dimproduct.sql,category,1
+\defaultdb\dbo\table\dimproduct.sql,create table,1
+\defaultdb\dbo\table\dimproduct.sql,decimal,2
+\defaultdb\dbo\table\dimproduct.sql,go,1
+\defaultdb\dbo\table\dimproduct.sql,identity,1
+\defaultdb\dbo\table\dimproduct.sql,int,2
+\defaultdb\dbo\table\dimproduct.sql,not null,8
+\defaultdb\dbo\table\dimproduct.sql,nvarchar,4
+\defaultdb\dbo\table\dimproduct.sql,primary key,1
+\defaultdb\dbo\table\dimproduct.sql,use,1
+\defaultdb\dbo\table\factsales.sql,create table,1
+\defaultdb\dbo\table\factsales.sql,datetime2,1
+\defaultdb\dbo\table\factsales.sql,decimal,5
+\defaultdb\dbo\table\factsales.sql,go,1
+\defaultdb\dbo\table\factsales.sql,int,5
+\defaultdb\dbo\table\factsales.sql,not null,13
+\defaultdb\dbo\table\factsales.sql,nvarchar,3
+\defaultdb\dbo\table\factsales.sql,primary key,1
+\defaultdb\dbo\table\factsales.sql,use,1
+\defaultdb\dbo\table\factsales_error.sql,create table,1
+\defaultdb\dbo\table\factsales_error.sql,datetime2,1
+\defaultdb\dbo\table\factsales_error.sql,go,1
+\defaultdb\dbo\table\factsales_error.sql,int,1
+\defaultdb\dbo\table\factsales_error.sql,nvarchar,1
+\defaultdb\dbo\table\factsales_error.sql,use,1
+\defaultdb\dbo\table\product.sql,bit,1
+\defaultdb\dbo\table\product.sql,category,1
+\defaultdb\dbo\table\product.sql,create table,1
+\defaultdb\dbo\table\product.sql,datetime2,1
+\defaultdb\dbo\table\product.sql,default,2
+\defaultdb\dbo\table\product.sql,go,1
+\defaultdb\dbo\table\product.sql,identity,1
+\defaultdb\dbo\table\product.sql,int,1
+\defaultdb\dbo\table\product.sql,money,2
+\defaultdb\dbo\table\product.sql,not null,6
+\defaultdb\dbo\table\product.sql,null,2
+\defaultdb\dbo\table\product.sql,nvarchar,4
+\defaultdb\dbo\table\product.sql,primary key,1
+\defaultdb\dbo\table\product.sql,sysutcdatetime,1
+\defaultdb\dbo\table\product.sql,use,1
+\defaultdb\dbo\table\salesorderdetail.sql,create table,1
+\defaultdb\dbo\table\salesorderdetail.sql,datetime2,1
+\defaultdb\dbo\table\salesorderdetail.sql,default,2
+\defaultdb\dbo\table\salesorderdetail.sql,go,1
+\defaultdb\dbo\table\salesorderdetail.sql,identity,1
+\defaultdb\dbo\table\salesorderdetail.sql,int,3
+\defaultdb\dbo\table\salesorderdetail.sql,money,2
+\defaultdb\dbo\table\salesorderdetail.sql,not null,6
+\defaultdb\dbo\table\salesorderdetail.sql,primary key,1
+\defaultdb\dbo\table\salesorderdetail.sql,references,2
+\defaultdb\dbo\table\salesorderdetail.sql,smallint,1
+\defaultdb\dbo\table\salesorderdetail.sql,sysutcdatetime,1
+\defaultdb\dbo\table\salesorderdetail.sql,use,1
+\defaultdb\dbo\table\salesorderheader.sql,char,1
+\defaultdb\dbo\table\salesorderheader.sql,create table,1
+\defaultdb\dbo\table\salesorderheader.sql,datetime2,2
+\defaultdb\dbo\table\salesorderheader.sql,default,1
+\defaultdb\dbo\table\salesorderheader.sql,go,1
+\defaultdb\dbo\table\salesorderheader.sql,identity,1
+\defaultdb\dbo\table\salesorderheader.sql,int,2
+\defaultdb\dbo\table\salesorderheader.sql,not null,7
+\defaultdb\dbo\table\salesorderheader.sql,nvarchar,2
+\defaultdb\dbo\table\salesorderheader.sql,primary key,1
+\defaultdb\dbo\table\salesorderheader.sql,references,1
+\defaultdb\dbo\table\salesorderheader.sql,sysutcdatetime,1
+\defaultdb\dbo\table\salesorderheader.sql,tinyint,1
+\defaultdb\dbo\table\salesorderheader.sql,use,1
+\defaultdb\dbo\view\vw_salesbymonth.sql,=,3
+\defaultdb\dbo\view\vw_salesbymonth.sql,as,3
+\defaultdb\dbo\view\vw_salesbymonth.sql,category,2
+\defaultdb\dbo\view\vw_salesbymonth.sql,create view,1
+\defaultdb\dbo\view\vw_salesbymonth.sql,from,1
+\defaultdb\dbo\view\vw_salesbymonth.sql,go,1
+\defaultdb\dbo\view\vw_salesbymonth.sql,group by,1
+\defaultdb\dbo\view\vw_salesbymonth.sql,join,3
+\defaultdb\dbo\view\vw_salesbymonth.sql,month,2
+\defaultdb\dbo\view\vw_salesbymonth.sql,on,3
+\defaultdb\dbo\view\vw_salesbymonth.sql,select,1
+\defaultdb\dbo\view\vw_salesbymonth.sql,sum,2
+\defaultdb\dbo\view\vw_salesbymonth.sql,use,1
+\defaultdb\dbo\view\vw_salesbymonth.sql,year,2
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,=,5
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,as,2
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,begin,1
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,end,1
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,exec,1
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,exists,2
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,from,2
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,go,1
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,identity_insert,2
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,if,3
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,insert,3
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,is null,1
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,merge,1
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,not,2
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,null,2
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,off,1
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,on,2
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,schema_id,1
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,segment,1
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,select,2
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,set,3
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,then,2
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,update,1
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,use,1
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,using,1
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,values,4
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,when not matched,1
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,when matched,1
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,where,2
+\salesdw\dbo\unknown_type\05_legacy_etl_procedures.sql,-,3
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,=,16
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,@@rowcount,3
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,and,3
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,as,8
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,begin,2
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,commit,1
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,create or alter procedure,1
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,declare,1
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,drop table,1
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,end,1
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,exists,1
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,from,5
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,go,1
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,insert,1
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,int,4
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,into,1
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,isnull,10
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,join,3
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,left,1
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,lower,1
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,ltrim,7
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,not,1
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,null,1
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,nullif,4
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,on,4
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,or,5
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,rtrim,7
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,segment,6
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,select,3
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,set,7
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,tran,1
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,update,2
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,upper,1
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,use,1
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,where,4
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,with,1
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,+,4
+\salesdw\etl\procedure\usp_load_dimcustomer.sql,<>,7
+\salesdw\etl\procedure\usp_load_dimdate.sql,=,4
+\salesdw\etl\procedure\usp_load_dimdate.sql,as,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,begin,3
+\salesdw\etl\procedure\usp_load_dimdate.sql,case,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,char,2
+\salesdw\etl\procedure\usp_load_dimdate.sql,convert,4
+\salesdw\etl\procedure\usp_load_dimdate.sql,create or alter procedure,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,date,4
+\salesdw\etl\procedure\usp_load_dimdate.sql,dateadd,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,datename,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,datepart,3
+\salesdw\etl\procedure\usp_load_dimdate.sql,day,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,dayofweek,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,declare,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,else,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,end,4
+\salesdw\etl\procedure\usp_load_dimdate.sql,exists,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,from,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,go,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,if,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,in,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,insert,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,int,3
+\salesdw\etl\procedure\usp_load_dimdate.sql,month,3
+\salesdw\etl\procedure\usp_load_dimdate.sql,not,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,on,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,quarter,2
+\salesdw\etl\procedure\usp_load_dimdate.sql,select,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,set,5
+\salesdw\etl\procedure\usp_load_dimdate.sql,then,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,use,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,values,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,when,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,where,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,while,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,year,2
+\salesdw\etl\procedure\usp_load_dimdate.sql,+=,1
+\salesdw\etl\procedure\usp_load_dimdate.sql,<=,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,=,9
+\salesdw\etl\procedure\usp_load_dimproduct.sql,@@rowcount,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,and,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,as,11
+\salesdw\etl\procedure\usp_load_dimproduct.sql,begin,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,by,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,cast,2
+\salesdw\etl\procedure\usp_load_dimproduct.sql,category,8
+\salesdw\etl\procedure\usp_load_dimproduct.sql,create or alter procedure,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,decimal,2
+\salesdw\etl\procedure\usp_load_dimproduct.sql,end,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,from,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,go,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,insert,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,int,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,isnull,2
+\salesdw\etl\procedure\usp_load_dimproduct.sql,ltrim,4
+\salesdw\etl\procedure\usp_load_dimproduct.sql,merge,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,nullif,2
+\salesdw\etl\procedure\usp_load_dimproduct.sql,on,2
+\salesdw\etl\procedure\usp_load_dimproduct.sql,or,6
+\salesdw\etl\procedure\usp_load_dimproduct.sql,rtrim,4
+\salesdw\etl\procedure\usp_load_dimproduct.sql,select,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,set,3
+\salesdw\etl\procedure\usp_load_dimproduct.sql,target,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,then,2
+\salesdw\etl\procedure\usp_load_dimproduct.sql,update,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,use,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,using,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,values,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,when not matched,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,when matched,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,with,1
+\salesdw\etl\procedure\usp_load_dimproduct.sql,<>,7
+\salesdw\etl\procedure\usp_load_factsales.sql,=,28
+\salesdw\etl\procedure\usp_load_factsales.sql,@@rowcount,2
+\salesdw\etl\procedure\usp_load_factsales.sql,and,3
+\salesdw\etl\procedure\usp_load_factsales.sql,as,17
+\salesdw\etl\procedure\usp_load_factsales.sql,begin,2
+\salesdw\etl\procedure\usp_load_factsales.sql,by,1
+\salesdw\etl\procedure\usp_load_factsales.sql,case,3
+\salesdw\etl\procedure\usp_load_factsales.sql,cast,5
+\salesdw\etl\procedure\usp_load_factsales.sql,char,1
+\salesdw\etl\procedure\usp_load_factsales.sql,commit,1
+\salesdw\etl\procedure\usp_load_factsales.sql,convert,2
+\salesdw\etl\procedure\usp_load_factsales.sql,create or alter procedure,1
+\salesdw\etl\procedure\usp_load_factsales.sql,datetime2,2
+\salesdw\etl\procedure\usp_load_factsales.sql,decimal,4
+\salesdw\etl\procedure\usp_load_factsales.sql,declare,1
+\salesdw\etl\procedure\usp_load_factsales.sql,delete,2
+\salesdw\etl\procedure\usp_load_factsales.sql,drop table,2
+\salesdw\etl\procedure\usp_load_factsales.sql,else,2
+\salesdw\etl\procedure\usp_load_factsales.sql,end,4
+\salesdw\etl\procedure\usp_load_factsales.sql,from,8
+\salesdw\etl\procedure\usp_load_factsales.sql,go,1
+\salesdw\etl\procedure\usp_load_factsales.sql,if,1
+\salesdw\etl\procedure\usp_load_factsales.sql,insert,2
+\salesdw\etl\procedure\usp_load_factsales.sql,int,4
+\salesdw\etl\procedure\usp_load_factsales.sql,into,2
+\salesdw\etl\procedure\usp_load_factsales.sql,is not null,2
+\salesdw\etl\procedure\usp_load_factsales.sql,is null,5
+\salesdw\etl\procedure\usp_load_factsales.sql,isnull,2
+\salesdw\etl\procedure\usp_load_factsales.sql,join,5
+\salesdw\etl\procedure\usp_load_factsales.sql,left,2
+\salesdw\etl\procedure\usp_load_factsales.sql,max,1
+\salesdw\etl\procedure\usp_load_factsales.sql,merge,1
+\salesdw\etl\procedure\usp_load_factsales.sql,on,7
+\salesdw\etl\procedure\usp_load_factsales.sql,or,6
+\salesdw\etl\procedure\usp_load_factsales.sql,round,3
+\salesdw\etl\procedure\usp_load_factsales.sql,select,6
+\salesdw\etl\procedure\usp_load_factsales.sql,set,6
+\salesdw\etl\procedure\usp_load_factsales.sql,sysdatetime,3
+\salesdw\etl\procedure\usp_load_factsales.sql,target,1
+\salesdw\etl\procedure\usp_load_factsales.sql,then,10
+\salesdw\etl\procedure\usp_load_factsales.sql,tran,1
+\salesdw\etl\procedure\usp_load_factsales.sql,update,2
+\salesdw\etl\procedure\usp_load_factsales.sql,use,1
+\salesdw\etl\procedure\usp_load_factsales.sql,using,1
+\salesdw\etl\procedure\usp_load_factsales.sql,values,1
+\salesdw\etl\procedure\usp_load_factsales.sql,when not matched,1
+\salesdw\etl\procedure\usp_load_factsales.sql,when matched,1
+\salesdw\etl\procedure\usp_load_factsales.sql,when,8
+\salesdw\etl\procedure\usp_load_factsales.sql,where,6
+\salesdw\etl\procedure\usp_load_factsales.sql,with,2
+\salesdw\etl\procedure\usp_load_factsales.sql,*,6
+\salesdw\etl\procedure\usp_load_factsales.sql,-,4
+\salesdw\etl\procedure\usp_load_factsales.sql,<=,3
+\salesdw\etl\procedure\usp_load_factsales.sql,<,3
+\salesdw\etl\procedure\usp_load_factsales.sql,>=,1
+\salesdw\etl\procedure\usp_load_factsales.sql,>,4
+\salesdw\etl\procedure\usp_load_salesdw.sql,=,14
+\salesdw\etl\procedure\usp_load_salesdw.sql,@@trancount,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,as,3
+\salesdw\etl\procedure\usp_load_salesdw.sql,begin try,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,begin catch,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,begin,2
+\salesdw\etl\procedure\usp_load_salesdw.sql,cast,2
+\salesdw\etl\procedure\usp_load_salesdw.sql,concat,2
+\salesdw\etl\procedure\usp_load_salesdw.sql,create or alter procedure,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,date,4
+\salesdw\etl\procedure\usp_load_salesdw.sql,declare,5
+\salesdw\etl\procedure\usp_load_salesdw.sql,end try,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,end catch,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,end,2
+\salesdw\etl\procedure\usp_load_salesdw.sql,error_line,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,error_message,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,error_number,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,exec,13
+\salesdw\etl\procedure\usp_load_salesdw.sql,format,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,from,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,go,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,if,2
+\salesdw\etl\procedure\usp_load_salesdw.sql,int,2
+\salesdw\etl\procedure\usp_load_salesdw.sql,is not null,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,max,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,min,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,newid,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,null,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,nvarchar,3
+\salesdw\etl\procedure\usp_load_salesdw.sql,on,2
+\salesdw\etl\procedure\usp_load_salesdw.sql,rollback,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,select,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,set,7
+\salesdw\etl\procedure\usp_load_salesdw.sql,sysdatetime,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,throw,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,uniqueidentifier,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,use,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,with,1
+\salesdw\etl\procedure\usp_load_salesdw.sql,>,1
+\salesdw\etl\procedure\usp_logstep.sql,=,2
+\salesdw\etl\procedure\usp_logstep.sql,as,1
+\salesdw\etl\procedure\usp_logstep.sql,begin,1
+\salesdw\etl\procedure\usp_logstep.sql,create or alter procedure,1
+\salesdw\etl\procedure\usp_logstep.sql,end,1
+\salesdw\etl\procedure\usp_logstep.sql,go,1
+\salesdw\etl\procedure\usp_logstep.sql,insert,1
+\salesdw\etl\procedure\usp_logstep.sql,int,1
+\salesdw\etl\procedure\usp_logstep.sql,null,2
+\salesdw\etl\procedure\usp_logstep.sql,nvarchar,3
+\salesdw\etl\procedure\usp_logstep.sql,on,1
+\salesdw\etl\procedure\usp_logstep.sql,set,1
+\salesdw\etl\procedure\usp_logstep.sql,uniqueidentifier,1
+\salesdw\etl\procedure\usp_logstep.sql,use,1
+\salesdw\etl\procedure\usp_logstep.sql,values,1
+\salesdw\etl\table\countryregion.sql,char,1
+\salesdw\etl\table\countryregion.sql,create table,1
+\salesdw\etl\table\countryregion.sql,go,1
+\salesdw\etl\table\countryregion.sql,if,1
+\salesdw\etl\table\countryregion.sql,is null,1
+\salesdw\etl\table\countryregion.sql,not null,3
+\salesdw\etl\table\countryregion.sql,nvarchar,2
+\salesdw\etl\table\countryregion.sql,object_id,1
+\salesdw\etl\table\countryregion.sql,primary key,1
+\salesdw\etl\table\countryregion.sql,use,1
+\salesdw\etl\table\loadlog.sql,create table,1
+\salesdw\etl\table\loadlog.sql,datetime2,1
+\salesdw\etl\table\loadlog.sql,default,1
+\salesdw\etl\table\loadlog.sql,go,1
+\salesdw\etl\table\loadlog.sql,identity,1
+\salesdw\etl\table\loadlog.sql,if,1
+\salesdw\etl\table\loadlog.sql,int,2
+\salesdw\etl\table\loadlog.sql,is null,1
+\salesdw\etl\table\loadlog.sql,not null,4
+\salesdw\etl\table\loadlog.sql,null,2
+\salesdw\etl\table\loadlog.sql,nvarchar,3
+\salesdw\etl\table\loadlog.sql,object_id,1
+\salesdw\etl\table\loadlog.sql,primary key,1
+\salesdw\etl\table\loadlog.sql,sysdatetime,1
+\salesdw\etl\table\loadlog.sql,uniqueidentifier,1
+\salesdw\etl\table\loadlog.sql,use,1
+\salesdw\etl\table\watermark.sql,create table,1
+\salesdw\etl\table\watermark.sql,datetime2,1
+\salesdw\etl\table\watermark.sql,go,1
+\salesdw\etl\table\watermark.sql,if,1
+\salesdw\etl\table\watermark.sql,is null,1
+\salesdw\etl\table\watermark.sql,not null,2
+\salesdw\etl\table\watermark.sql,nvarchar,1
+\salesdw\etl\table\watermark.sql,object_id,1
+\salesdw\etl\table\watermark.sql,primary key,1
+\salesdw\etl\table\watermark.sql,use,1

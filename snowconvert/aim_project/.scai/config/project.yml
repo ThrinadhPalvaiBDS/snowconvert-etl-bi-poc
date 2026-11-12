@@ -1,0 +1,10 @@
+schema_version: 1.0
+project_id: MIGRATION_PROJECT_fcc35cae_1458_4cde_bf6b_c8ccadfabcdd
+project_name: aim_project
+source_language: SqlServer
+created_by: Thrinadh Palvai
+created_at: 2026-11-11T15:56:45.8729803Z
+cloud_project_id: MIGRATION_PROJECT_fcc35cae_1458_4cde_bf6b_c8ccadfabcdd
+default_affinity: aim-project-fcc35cae
+project_type: full_migration
+enable_cloud_status: true

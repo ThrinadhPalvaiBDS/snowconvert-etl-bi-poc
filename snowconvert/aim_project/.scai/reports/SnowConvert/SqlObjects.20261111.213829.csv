@@ -1,0 +1,18 @@
+sql_object_id,file_path,sql_object_type,presence,line_number,lines_of_code,deployment_order
+PUBLIC.DATE_PART_WEEK_DAY_UDF(),UDF Helpers\DATETIME_FUNCTIONS_UDF.sql,FUNCTION,SNOWFLAKE_ONLY,,,0
+SalesDW.etl.usp_Load_DimCustomer(INT),salesdw\etl\procedure\usp_load_dimcustomer.sql,PROCEDURE,BOTH,5,56,1*
+"SalesDW.etl.usp_Load_DimDate(DATE,DATE,INT)",salesdw\etl\procedure\usp_load_dimdate.sql,PROCEDURE,BOTH,5,28,1*
+SalesDW.etl.usp_Load_DimProduct(INT),salesdw\etl\procedure\usp_load_dimproduct.sql,PROCEDURE,BOTH,5,29,1*
+"SalesDW.etl.usp_Load_FactSales(INT,INT)",salesdw\etl\procedure\usp_load_factsales.sql,PROCEDURE,BOTH,5,97,1*
+SalesDW.etl.usp_Load_SalesDW(),salesdw\etl\procedure\usp_load_salesdw.sql,PROCEDURE,BOTH,5,50,2*
+"SalesDW.etl.usp_LogStep(UNIQUEIDENTIFIER,NVARCHAR,NVARCHAR,INT,NVARCHAR)",salesdw\etl\procedure\usp_logstep.sql,PROCEDURE,BOTH,5,12,1
+defaultdb.dbo.Customer,defaultdb\dbo\table\customer.sql,TABLE,BOTH,5,12,0
+defaultdb.dbo.DimCustomer,defaultdb\dbo\table\dimcustomer.sql,TABLE,BOTH,5,14,0
+defaultdb.dbo.DimDate,defaultdb\dbo\table\dimdate.sql,TABLE,BOTH,5,10,0
+defaultdb.dbo.DimProduct,defaultdb\dbo\table\dimproduct.sql,TABLE,BOTH,5,11,0
+defaultdb.dbo.FactSales,defaultdb\dbo\table\factsales.sql,TABLE,BOTH,5,16,0
+defaultdb.dbo.FactSales_Error,defaultdb\dbo\table\factsales_error.sql,TABLE,BOTH,5,3,0
+defaultdb.dbo.Product,defaultdb\dbo\table\product.sql,TABLE,BOTH,5,11,0
+defaultdb.dbo.SalesOrderDetail,defaultdb\dbo\table\salesorderdetail.sql,TABLE,BOTH,5,9,2
+defaultdb.dbo.SalesOrderHeader,defaultdb\dbo\table\salesorderheader.sql,TABLE,BOTH,5,10,1
+defaultdb.dbo.vw_SalesByMonth,defaultdb\dbo\view\vw_salesbymonth.sql,VIEW,BOTH,5,8,1

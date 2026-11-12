@@ -1,0 +1,174 @@
+{
+  "object": "SalesDW.etl.usp_LogStep(UNIQUEIDENTIFIER,NVARCHAR,NVARCHAR,INT,NVARCHAR)",
+  "object_type": "PROCEDURE",
+  "branches": [],
+  "predicates": [],
+  "edges": [],
+  "assignments": [
+    {
+      "table": "SalesDW.etl.LoadLog",
+      "column": "ErrorMessage",
+      "value": "@ErrorMessage"
+    },
+    {
+      "table": "SalesDW.etl.LoadLog",
+      "column": "RowsAffected",
+      "value": "@RowsAffected"
+    },
+    {
+      "table": "SalesDW.etl.LoadLog",
+      "column": "RunID",
+      "value": "@RunID"
+    },
+    {
+      "table": "SalesDW.etl.LoadLog",
+      "column": "Status",
+      "value": "@Status"
+    },
+    {
+      "table": "SalesDW.etl.LoadLog",
+      "column": "StepName",
+      "value": "@StepName"
+    }
+  ],
+  "semi_anti": [],
+  "schema_version": 1,
+  "parameters": [
+    {
+      "name": "@RunID",
+      "type": "UNIQUEIDENTIFIER",
+      "param_kind": "business_scalar",
+      "is_integer": false,
+      "is_number": false,
+      "is_string": false,
+      "is_date": false,
+      "is_boolean": false,
+      "is_binary": false
+    },
+    {
+      "name": "@StepName",
+      "type": "NVARCHAR",
+      "param_kind": "business_scalar",
+      "precision": 100,
+      "is_integer": false,
+      "is_number": false,
+      "is_string": true,
+      "is_date": false,
+      "is_boolean": false,
+      "is_binary": false,
+      "observed_values": [
+        "FactSales rejected rows",
+        "Package"
+      ]
+    },
+    {
+      "name": "@Status",
+      "type": "NVARCHAR",
+      "param_kind": "business_scalar",
+      "precision": 20,
+      "is_integer": false,
+      "is_number": false,
+      "is_string": true,
+      "is_date": false,
+      "is_boolean": false,
+      "is_binary": false,
+      "observed_values": [
+        "Failed",
+        "Started",
+        "Succeeded"
+      ]
+    },
+    {
+      "name": "@RowsAffected",
+      "type": "INT",
+      "param_kind": "business_scalar",
+      "default": "NULL",
+      "is_integer": true,
+      "is_number": true,
+      "is_string": false,
+      "is_date": false,
+      "is_boolean": false,
+      "is_binary": false,
+      "observed_values": [
+        "NULL"
+      ],
+      "default_kind": "null"
+    },
+    {
+      "name": "@ErrorMessage",
+      "type": "NVARCHAR",
+      "param_kind": "business_scalar",
+      "default": "NULL",
+      "precision": 4000,
+      "is_integer": false,
+      "is_number": false,
+      "is_string": true,
+      "is_date": false,
+      "is_boolean": false,
+      "is_binary": false,
+      "default_kind": "null"
+    }
+  ],
+  "parameter_bindings": [
+    {
+      "parameter": "@RunID",
+      "bindings": [
+        {
+          "table": "SalesDW.etl.LoadLog",
+          "column": "RunID",
+          "operator": "="
+        }
+      ],
+      "branch_linked": false
+    },
+    {
+      "parameter": "@StepName",
+      "bindings": [
+        {
+          "table": "SalesDW.etl.LoadLog",
+          "column": "StepName",
+          "operator": "="
+        }
+      ],
+      "branch_linked": false
+    },
+    {
+      "parameter": "@Status",
+      "bindings": [
+        {
+          "table": "SalesDW.etl.LoadLog",
+          "column": "Status",
+          "operator": "="
+        }
+      ],
+      "branch_linked": false
+    },
+    {
+      "parameter": "@RowsAffected",
+      "bindings": [
+        {
+          "table": "SalesDW.etl.LoadLog",
+          "column": "RowsAffected",
+          "operator": "="
+        }
+      ],
+      "branch_linked": false
+    },
+    {
+      "parameter": "@ErrorMessage",
+      "bindings": [
+        {
+          "table": "SalesDW.etl.LoadLog",
+          "column": "ErrorMessage",
+          "operator": "="
+        }
+      ],
+      "branch_linked": false
+    }
+  ],
+  "parameter_coverage": {
+    "total": 5,
+    "branch_linked": 0,
+    "argument_only": 5
+  }
+}

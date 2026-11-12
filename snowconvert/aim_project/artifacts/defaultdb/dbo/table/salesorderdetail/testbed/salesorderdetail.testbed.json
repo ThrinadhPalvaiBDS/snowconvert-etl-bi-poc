@@ -1,0 +1,180 @@
+{
+  "object": "defaultdb.dbo.SalesOrderDetail",
+  "object_type": "TABLE",
+  "columns": [
+    {
+      "name": "SalesOrderDetailID",
+      "type": "INT",
+      "is_integer": true,
+      "is_number": true,
+      "is_string": false,
+      "is_date": false,
+      "is_datetime": false,
+      "is_boolean": false,
+      "is_binary": false,
+      "nullable": false,
+      "primary_key": true,
+      "foreign_key": false,
+      "unique": false,
+      "check": false,
+      "has_default": false,
+      "integer_low": -2147483648,
+      "integer_high": 2147483647,
+      "is_identity": true
+    },
+    {
+      "name": "SalesOrderID",
+      "type": "INT",
+      "is_integer": true,
+      "is_number": true,
+      "is_string": false,
+      "is_date": false,
+      "is_datetime": false,
+      "is_boolean": false,
+      "is_binary": false,
+      "nullable": false,
+      "primary_key": false,
+      "foreign_key": true,
+      "unique": false,
+      "check": false,
+      "has_default": false,
+      "foreign_key_referenced_table": "defaultdb.dbo.SalesOrderHeader",
+      "foreign_key_referenced_column": "SalesOrderID",
+      "integer_low": -2147483648,
+      "integer_high": 2147483647,
+      "is_identity": false
+    },
+    {
+      "name": "ProductID",
+      "type": "INT",
+      "is_integer": true,
+      "is_number": true,
+      "is_string": false,
+      "is_date": false,
+      "is_datetime": false,
+      "is_boolean": false,
+      "is_binary": false,
+      "nullable": false,
+      "primary_key": false,
+      "foreign_key": true,
+      "unique": false,
+      "check": false,
+      "has_default": false,
+      "foreign_key_referenced_table": "defaultdb.dbo.Product",
+      "foreign_key_referenced_column": "ProductID",
+      "integer_low": -2147483648,
+      "integer_high": 2147483647,
+      "is_identity": false
+    },
+    {
+      "name": "OrderQty",
+      "type": "SMALLINT",
+      "is_integer": true,
+      "is_number": true,
+      "is_string": false,
+      "is_date": false,
+      "is_datetime": false,
+      "is_boolean": false,
+      "is_binary": false,
+      "nullable": false,
+      "primary_key": false,
+      "foreign_key": false,
+      "unique": false,
+      "check": false,
+      "has_default": false,
+      "integer_low": -32768,
+      "integer_high": 32767,
+      "is_identity": false
+    },
+    {
+      "name": "UnitPrice",
+      "type": "MONEY",
+      "is_integer": false,
+      "is_number": true,
+      "is_string": false,
+      "is_date": false,
+      "is_datetime": false,
+      "is_boolean": false,
+      "is_binary": false,
+      "nullable": false,
+      "primary_key": false,
+      "foreign_key": false,
+      "unique": false,
+      "check": false,
+      "has_default": false,
+      "precision": 19,
+      "scale": 4,
+      "is_identity": false,
+      "numeric_low": "-922337203685477.5808",
+      "numeric_high": "922337203685477.5807"
+    },
+    {
+      "name": "UnitPriceDiscount",
+      "type": "MONEY",
+      "is_integer": false,
+      "is_number": true,
+      "is_string": false,
+      "is_date": false,
+      "is_datetime": false,
+      "is_boolean": false,
+      "is_binary": false,
+      "nullable": false,
+      "primary_key": false,
+      "foreign_key": false,
+      "unique": false,
+      "check": false,
+      "has_default": true,
+      "precision": 19,
+      "scale": 4,
+      "is_identity": false,
+      "default_kind": "constant",
+      "default_value": "0",
+      "numeric_low": "-922337203685477.5808",
+      "numeric_high": "922337203685477.5807"
+    },
+    {
+      "name": "ModifiedDate",
+      "type": "DATETIME2(3)",
+      "is_integer": false,
+      "is_number": false,
+      "is_string": false,
+      "is_date": true,
+      "is_datetime": true,
+      "is_boolean": false,
+      "is_binary": false,
+      "nullable": false,
+      "primary_key": false,
+      "foreign_key": false,
+      "unique": false,
+      "check": false,
+      "has_default": true,
+      "precision": 3,
+      "is_identity": false,
+      "default_kind": "current_time"
+    }
+  ],
+  "primary_key": [
+    "SalesOrderDetailID"
+  ],
+  "foreign_keys": [
+    {
+      "child_columns": [
+        "SalesOrderID"
+      ],
+      "parent_table": "defaultdb.dbo.SalesOrderHeader",
+      "parent_columns": [
+        "SalesOrderID"
+      ]
+    },
+    {
+      "child_columns": [
+        "ProductID"
+      ],
+      "parent_table": "defaultdb.dbo.Product",
+      "parent_columns": [
+        "ProductID"
+      ]
+    }
+  ],
+  "schema_version": 1
+}

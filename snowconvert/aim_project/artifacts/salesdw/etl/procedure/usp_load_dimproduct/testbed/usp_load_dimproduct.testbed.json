@@ -1,0 +1,211 @@
+{
+  "object": "SalesDW.etl.usp_Load_DimProduct(INT)",
+  "object_type": "PROCEDURE",
+  "branches": [
+    {
+      "branch_id": 0,
+      "construct_kind": "MERGE",
+      "line": 23,
+      "predicate_text": "t.ProductID = s.ProductID",
+      "columns": [
+        {
+          "column": "ProductID",
+          "is_integer": false,
+          "is_number": false,
+          "is_string": false,
+          "is_date": false,
+          "is_datetime": false,
+          "is_boolean": false,
+          "is_binary": false
+        }
+      ],
+      "diagnostics": [
+        {
+          "reason": "non_algebraic_comparison",
+          "expression": "SqlEql"
+        }
+      ]
+    },
+    {
+      "branch_id": 1,
+      "construct_kind": "MERGE_WHEN_MATCHED",
+      "line": 24,
+      "predicate_text": "(t.SKU <> s.SKU OR t.ProductName <> s.ProductName OR t.Category <> s.Category\r\n                      OR t.SubCategory <> s.SubCategory OR t.ListPrice <> s.ListPrice\r\n                      OR t.StandardCost <> s.StandardCost OR t.IsActive <> s.IsActive)",
+      "columns": [
+        {
+          "column": "SKU",
+          "type": "String",
+          "is_integer": false,
+          "is_number": false,
+          "is_string": true,
+          "is_date": false,
+          "is_datetime": false,
+          "is_boolean": false,
+          "is_binary": false
+        },
+        {
+          "column": "ProductName",
+          "type": "String",
+          "is_integer": false,
+          "is_number": false,
+          "is_string": true,
+          "is_date": false,
+          "is_datetime": false,
+          "is_boolean": false,
+          "is_binary": false
+        },
+        {
+          "column": "Category",
+          "type": "String",
+          "is_integer": false,
+          "is_number": false,
+          "is_string": true,
+          "is_date": false,
+          "is_datetime": false,
+          "is_boolean": false,
+          "is_binary": false
+        },
+        {
+          "column": "SubCategory",
+          "type": "String",
+          "is_integer": false,
+          "is_number": false,
+          "is_string": true,
+          "is_date": false,
+          "is_datetime": false,
+          "is_boolean": false,
+          "is_binary": false
+        },
+        {
+          "column": "ListPrice",
+          "type": "DECIMAL(19,4)",
+          "is_integer": false,
+          "is_number": true,
+          "is_string": false,
+          "is_date": false,
+          "is_datetime": false,
+          "is_boolean": false,
+          "is_binary": false,
+          "precision": 19,
+          "scale": 4
+        },
+        {
+          "column": "StandardCost",
+          "type": "DECIMAL(19,4)",
+          "is_integer": false,
+          "is_number": true,
+          "is_string": false,
+          "is_date": false,
+          "is_datetime": false,
+          "is_boolean": false,
+          "is_binary": false,
+          "precision": 19,
+          "scale": 4
+        },
+        {
+          "column": "IsActive",
+          "is_integer": false,
+          "is_number": false,
+          "is_string": false,
+          "is_date": false,
+          "is_datetime": false,
+          "is_boolean": false,
+          "is_binary": false
+        }
+      ],
+      "diagnostics": [
+        {
+          "reason": "non_algebraic_comparison",
+          "expression": "SqlDifferent"
+        },
+        {
+          "reason": "non_algebraic_comparison",
+          "expression": "SqlDifferent"
+        },
+        {
+          "reason": "non_algebraic_comparison",
+          "expression": "SqlDifferent"
+        },
+        {
+          "reason": "non_algebraic_comparison",
+          "expression": "SqlDifferent"
+        },
+        {
+          "reason": "non_algebraic_comparison",
+          "expression": "SqlDifferent"
+        },
+        {
+          "reason": "non_algebraic_comparison",
+          "expression": "SqlDifferent"
+        },
+        {
+          "reason": "non_algebraic_comparison",
+          "expression": "SqlDifferent"
+        }
+      ]
+    },
+    {
+      "branch_id": 2,
+      "construct_kind": "MERGE_WHEN_NOT_MATCHED_BY_TARGET",
+      "line": 30,
+      "predicate_text": "TRUE",
+      "columns": [],
+      "construct_sub_kind": "trivial"
+    }
+  ],
+  "predicates": [],
+  "edges": [],
+  "assignments": [
+    {
+      "table": "",
+      "column": "Category",
+      "value": "s.Category"
+    },
+    {
+      "table": "",
+      "column": "IsActive",
+      "value": "s.IsActive"
+    },
+    {
+      "table": "",
+      "column": "ListPrice",
+      "value": "s.ListPrice"
+    },
+    {
+      "table": "",
+      "column": "ProductName",
+      "value": "s.ProductName"
+    },
+    {
+      "table": "",
+      "column": "SKU",
+      "value": "s.SKU"
+    },
+    {
+      "table": "",
+      "column": "StandardCost",
+      "value": "s.StandardCost"
+    },
+    {
+      "table": "",
+      "column": "SubCategory",
+      "value": "s.SubCategory"
+    }
+  ],
+  "semi_anti": [],
+  "schema_version": 1,
+  "parameters": [
+    {
+      "name": "@RowsAffected",
+      "type": "INT",
+      "param_kind": "business_scalar",
+      "direction": "out",
+      "is_integer": true,
+      "is_number": true,
+      "is_string": false,
+      "is_date": false,
+      "is_boolean": false,
+      "is_binary": false
+    }
+  ]
+}

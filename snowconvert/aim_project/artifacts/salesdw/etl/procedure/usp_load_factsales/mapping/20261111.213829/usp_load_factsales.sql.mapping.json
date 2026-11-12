@@ -1,0 +1,443 @@
+{
+  "schema_version": "1.1",
+  "source_system": "sql",
+  "engine_version": "2.54.0-Pr",
+  "source_file": "salesdw/etl/procedure/usp_load_factsales.sql",
+  "source_checksum": "865ee116906f8aca1d0e6c9fd05379a6555b8df59a11de492b6ababa0838b4ef",
+  "pairs": [
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlUseStatement",
+      "source_line_start": 1,
+      "source_line_end": 1,
+      "source_text": "USE SalesDW",
+      "targets": [
+        "USE DATABASE <%salesdw%>"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "absorbed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 9,
+      "source_line_end": 112,
+      "source_text": "BEGIN\r\n--    SET NOCOUNT ON;\r\n    DECLARE @wm DATETIME2(3), @newWm DATETIME2(3);\r\n\r\n    SELECT @wm = LoadDate FROM etl.Watermark WHERE TableName = N'FactSales';\r\n    SET @wm = ISNULL(@wm, '1900-01-01');\r\n\r\n    -- Source: lines whose line or header changed since the last load\r\n    SELECT  d.SalesOrderDetailID,\r\n            h.OrderNumber,\r\n            h.OrderDate,\r\n            h.CustomerID,\r\n            d.ProductID,\r\n            h.Channel,\r\n            h.Status,\r\n            d.OrderQty,\r\n            d.UnitPrice,\r\n            d.UnitPriceDiscount,\r\n            CASE WHEN d.ModifiedDate > h.ModifiedDate THEN d.ModifiedDate ELSE h.ModifiedDate END AS ChangeDate\r\n    INTO    #lines\r\n    FROM    SalesOLTP.dbo.SalesOrderDetail d WITH (NOLOCK)\r\n    JOIN    SalesOLTP.dbo.SalesOrderHeader h WITH (NOLOCK) ON h.SalesOrderID = d.SalesOrderID\r\n    WHERE   d.ModifiedDate > @wm OR h.ModifiedDate > @wm;\r\n\r\n    -- Lookups (no match -> NULL key, caught by the split below)\r\n    SELECT  l.*,\r\n            c.CustomerKey,\r\n            p.ProductKey,\r\n            p.StandardCost\r\n    INTO    #enriched\r\n    FROM    #lines l\r\n    LEFT JOIN dbo.DimCustomer c ON c.CustomerID = l.CustomerID AND c.IsCurrent = 1\r\n    LEFT JOIN dbo.DimProduct  p ON p.ProductID  = l.ProductID;\r\n\r\n    BEGIN TRAN;\r\n\r\n    -- Reprocessed lines: clear earlier errors so each line has one outcome\r\n    DELETE e\r\n    FROM   dbo.FactSales_Error e\r\n    JOIN   #enriched x ON x.SalesOrderDetailID = e.SalesOrderDetailID;\r\n\r\n    -- Conditional Split: error output\r\n    INSERT dbo.FactSales_Error (SalesOrderDetailID, ErrorReason, LoadDate)\r\n    SELECT SalesOrderDetailID,\r\n           CASE WHEN OrderQty <= 0       THEN N'Non-positive quantity'\r\n                WHEN UnitPrice < 0       THEN N'Negative unit price'\r\n                WHEN ProductKey IS NULL  THEN N'Product lookup no match'\r\n                WHEN CustomerKey IS NULL THEN N'Customer lookup no match' END,\r\n           SYSDATETIME()\r\n    FROM   #enriched\r\n    WHERE  OrderQty <= 0 OR UnitPrice < 0 OR ProductKey IS NULL OR CustomerKey IS NULL;\r\n    SET @RowsRejected = @@ROWCOUNT;\r\n\r\n    -- A line that has become invalid must not stay in the fact table\r\n    DELETE f\r\n    FROM   dbo.FactSales f\r\n    JOIN   #enriched x ON x.SalesOrderDetailID = f.SalesOrderDetailID\r\n    WHERE  x.OrderQty <= 0 OR x.UnitPrice < 0 OR x.ProductKey IS NULL;\r\n\r\n    -- Conditional Split: default output -> FactSales (upsert)\r\n    MERGE dbo.FactSales AS t\r\n    USING (\r\n        SELECT  SalesOrderDetailID,\r\n                OrderNumber,\r\n                CONVERT(INT, CONVERT(CHAR(8), OrderDate, 112))                      AS OrderDateKey,\r\n                ISNULL(CustomerKey, -1)                                             AS CustomerKey,\r\n                ProductKey,\r\n                Channel,\r\n                CASE Status WHEN 1 THEN N'Open' WHEN 2 THEN N'Shipped'\r\n                            WHEN 3 THEN N'Cancelled' ELSE N'Unknown' END            AS OrderStatus,\r\n                CAST(OrderQty AS INT)                                               AS Quantity,\r\n                CAST(UnitPrice AS DECIMAL(19,4))                                    AS UnitPrice,\r\n                CAST(ROUND(OrderQty * UnitPrice * UnitPriceDiscount, 4) AS DECIMAL(19,4)) AS DiscountAmount,\r\n                CAST(ROUND(OrderQty * UnitPrice * (1 - UnitPriceDiscount), 4) AS DECIMAL(19,4)) AS SalesAmount,\r\n                CAST(ROUND(OrderQty * StandardCost, 4) AS DECIMAL(19,4))            AS CostAmount\r\n        FROM    #enriched\r\n        WHERE   OrderQty > 0 AND UnitPrice >= 0 AND ProductKey IS NOT NULL\r\n    ) AS s\r\n    ON t.SalesOrderDetailID = s.SalesOrderDetailID\r\n    WHEN MATCHED THEN UPDATE SET\r\n        OrderNumber = s.OrderNumber, OrderDateKey = s.OrderDateKey, CustomerKey = s.CustomerKey,\r\n        ProductKey = s.ProductKey, Channel = s.Channel, OrderStatus = s.OrderStatus,\r\n        Quantity = s.Quantity, UnitPrice = s.UnitPrice, DiscountAmount = s.DiscountAmount,\r\n        SalesAmount = s.SalesAmount, CostAmount = s.CostAmount,\r\n        MarginAmount = s.SalesAmount - s.CostAmount, LoadDate = SYSDATETIME()\r\n    WHEN NOT MATCHED BY TARGET THEN INSERT\r\n        (SalesOrderDetailID, OrderNumber, OrderDateKey, CustomerKey, ProductKey, Channel, OrderStatus,\r\n         Quantity, UnitPrice, DiscountAmount, SalesAmount, CostAmount, MarginAmount, LoadDate)\r\n        VALUES\r\n        (s.SalesOrderDetailID, s.OrderNumber, s.OrderDateKey, s.CustomerKey, s.ProductKey, s.Channel, s.OrderStatus,\r\n         s.Quantity, s.UnitPrice, s.DiscountAmount, s.SalesAmount, s.CostAmount,\r\n         s.SalesAmount - s.CostAmount, SYSDATETIME());\r\n    SET @RowsLoaded = @@ROWCOUNT;\r\n\r\n    -- Update Watermark (Execute SQL Task)\r\n    SELECT @newWm = MAX(ChangeDate) FROM #lines;\r\n    IF @newWm IS NOT NULL\r\n        UPDATE etl.Watermark SET LoadDate = @newWm WHERE TableName = N'FactSales';\r\n\r\n    COMMIT;\r\n\r\n    DROP TABLE #enriched;\r\n    DROP TABLE #lines;\r\nEND;",
+      "targets": [],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "unsupported",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 10,
+      "source_line_end": 10,
+      "source_text": "--    SET NOCOUNT ON;",
+      "targets": [
+        "--    SET NOCOUNT ON;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "absorbed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 11,
+      "source_line_end": 11,
+      "source_text": "    DECLARE @wm DATETIME2(3), @newWm DATETIME2(3);",
+      "targets": [],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 13,
+      "source_line_end": 13,
+      "source_text": "\r\n    SELECT @wm = LoadDate FROM etl.Watermark WHERE TableName = N'FactSales';",
+      "targets": [
+        "LET WM_RESULTSET_1 RESULTSET :=\r\n(\r\n\r\n   SELECT\r\n      LoadDate AS WM_VALUE\r\n   FROM\r\n      <%salesdw%>.etl.Watermark\r\n   WHERE\r\n      TableName = 'FactSales'\r\n);\r\nFOR WM_ROW_1 IN WM_RESULTSET_1 DO\r\n   WM := WM_ROW_1.WM_VALUE;\r\nEND FOR;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 14,
+      "source_line_end": 14,
+      "source_text": "    SET @wm = ISNULL(@wm, '1900-01-01');",
+      "targets": [
+        "WM := NVL(:WM, '1900-01-01');"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 17,
+      "source_line_end": 31,
+      "source_text": "\r\n    -- Source: lines whose line or header changed since the last load\r\n    SELECT  d.SalesOrderDetailID,\r\n            h.OrderNumber,\r\n            h.OrderDate,\r\n            h.CustomerID,\r\n            d.ProductID,\r\n            h.Channel,\r\n            h.Status,\r\n            d.OrderQty,\r\n            d.UnitPrice,\r\n            d.UnitPriceDiscount,\r\n            CASE WHEN d.ModifiedDate > h.ModifiedDate THEN d.ModifiedDate ELSE h.ModifiedDate END AS ChangeDate\r\n    INTO    #lines\r\n    FROM    SalesOLTP.dbo.SalesOrderDetail d WITH (NOLOCK)\r\n    JOIN    SalesOLTP.dbo.SalesOrderHeader h WITH (NOLOCK) ON h.SalesOrderID = d.SalesOrderID\r\n    WHERE   d.ModifiedDate > @wm OR h.ModifiedDate > @wm;",
+      "targets": [
+        "\r\n-- Source: lines whose line or header changed since the last load\r\nCREATE OR REPLACE TEMPORARY TABLE <%salesdw%>.PUBLIC.T_lines AS\r\n   SELECT\r\n      d.SalesOrderDetailID,\r\n      h.OrderNumber,\r\n      h.OrderDate,\r\n      h.CustomerID,\r\n      d.ProductID,\r\n      h.Channel,\r\n      h.Status,\r\n      d.OrderQty,\r\n      d.UnitPrice,\r\n      d.UnitPriceDiscount,\r\n                  CASE WHEN d.ModifiedDate > h.ModifiedDate\r\n            THEN d.ModifiedDate\r\n         ELSE h.ModifiedDate\r\n      END AS ChangeDate\r\n          FROM\r\n      <%salesoltp%>.dbo.SalesOrderDetail d\r\n          JOIN\r\n         <%salesoltp%>.dbo.SalesOrderHeader h\r\n         ON h.SalesOrderID = d.SalesOrderID\r\n          WHERE\r\n      d.ModifiedDate > :WM\r\n      OR h.ModifiedDate > :WM;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 34,
+      "source_line_end": 41,
+      "source_text": "\r\n    -- Lookups (no match -> NULL key, caught by the split below)\r\n    SELECT  l.*,\r\n            c.CustomerKey,\r\n            p.ProductKey,\r\n            p.StandardCost\r\n    INTO    #enriched\r\n    FROM    #lines l\r\n    LEFT JOIN dbo.DimCustomer c ON c.CustomerID = l.CustomerID AND c.IsCurrent = 1\r\n    LEFT JOIN dbo.DimProduct  p ON p.ProductID  = l.ProductID;",
+      "targets": [
+        "\r\n-- Lookups (no match -> NULL key, caught by the split below)\r\nCREATE OR REPLACE TEMPORARY TABLE <%salesdw%>.PUBLIC.T_enriched AS\r\n   SELECT\r\n      l.*,\r\n      c.CustomerKey,\r\n      p.ProductKey,\r\n      p.StandardCost\r\n     FROM\r\n      <%salesdw%>.PUBLIC.T_lines l\r\n     LEFT JOIN\r\n         <%salesdw%>.dbo.DimCustomer c\r\n         ON c.CustomerID = l.CustomerID\r\n         AND c.IsCurrent = 1\r\n     LEFT JOIN\r\n         <%salesdw%>.dbo.DimProduct p\r\n         ON p.ProductID = l.ProductID;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 43,
+      "source_line_end": 43,
+      "source_text": "\r\n    BEGIN TRAN;",
+      "targets": [
+        "\r\n    BEGIN TRANSACTION;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 46,
+      "source_line_end": 48,
+      "source_text": "\r\n    -- Reprocessed lines: clear earlier errors so each line has one outcome\r\n    DELETE e\r\n    FROM   dbo.FactSales_Error e\r\n    JOIN   #enriched x ON x.SalesOrderDetailID = e.SalesOrderDetailID;",
+      "targets": [
+        "\r\n-- Reprocessed lines: clear earlier errors so each line has one outcome\r\nDELETE FROM\r\n   <%salesdw%>.dbo.FactSales_Error e\r\nUSING <%salesdw%>.PUBLIC.T_enriched x\r\nWHERE\r\n   x.SalesOrderDetailID = e.SalesOrderDetailID;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 51,
+      "source_line_end": 59,
+      "source_text": "\r\n    -- Conditional Split: error output\r\n    INSERT dbo.FactSales_Error (SalesOrderDetailID, ErrorReason, LoadDate)\r\n    SELECT SalesOrderDetailID,\r\n           CASE WHEN OrderQty <= 0       THEN N'Non-positive quantity'\r\n                WHEN UnitPrice < 0       THEN N'Negative unit price'\r\n                WHEN ProductKey IS NULL  THEN N'Product lookup no match'\r\n                WHEN CustomerKey IS NULL THEN N'Customer lookup no match' END,\r\n           SYSDATETIME()\r\n    FROM   #enriched\r\n    WHERE  OrderQty <= 0 OR UnitPrice < 0 OR ProductKey IS NULL OR CustomerKey IS NULL;",
+      "targets": [
+        "\r\n    -- Conditional Split: error output\r\n    INSERT INTO <%salesdw%>.dbo.FactSales_Error (SalesOrderDetailID, ErrorReason, LoadDate)\r\n    SELECT\r\n       SalesOrderDetailID,\r\n           CASE WHEN OrderQty <= 0       THEN 'Non-positive quantity'\r\n          WHEN UnitPrice < 0       THEN 'Negative unit price'\r\n          WHEN ProductKey IS NULL  THEN 'Product lookup no match'\r\n          WHEN CustomerKey IS NULL THEN 'Customer lookup no match'\r\n       END,\r\n       CURRENT_TIMESTAMP()\r\n    FROM\r\n       <%salesdw%>.PUBLIC.T_enriched\r\n    WHERE\r\n       OrderQty <= 0 OR UnitPrice < 0 OR ProductKey IS NULL OR CustomerKey IS NULL;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.AnsiSql.AST.SqlSelect",
+      "source_line_start": 52,
+      "source_line_end": 59,
+      "source_text": "    SELECT SalesOrderDetailID,\r\n           CASE WHEN OrderQty <= 0       THEN N'Non-positive quantity'\r\n                WHEN UnitPrice < 0       THEN N'Negative unit price'\r\n                WHEN ProductKey IS NULL  THEN N'Product lookup no match'\r\n                WHEN CustomerKey IS NULL THEN N'Customer lookup no match' END,\r\n           SYSDATETIME()\r\n    FROM   #enriched\r\n    WHERE  OrderQty <= 0 OR UnitPrice < 0 OR ProductKey IS NULL OR CustomerKey IS NULL",
+      "targets": [
+        "    SELECT\r\n              SalesOrderDetailID,\r\n              CASE WHEN OrderQty <= 0       THEN 'Non-positive quantity'\r\n                   WHEN UnitPrice < 0       THEN 'Negative unit price'\r\n                   WHEN ProductKey IS NULL  THEN 'Product lookup no match'\r\n                   WHEN CustomerKey IS NULL THEN 'Customer lookup no match'\r\n              END,\r\n              CURRENT_TIMESTAMP()\r\n    FROM\r\n              <%salesdw%>.PUBLIC.T_enriched\r\n    WHERE\r\n              OrderQty <= 0 OR UnitPrice < 0 OR ProductKey IS NULL OR CustomerKey IS NULL"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 60,
+      "source_line_end": 60,
+      "source_text": "    SET @RowsRejected = @@ROWCOUNT;",
+      "targets": [
+        "ROWSREJECTED := SQLROWCOUNT;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 63,
+      "source_line_end": 66,
+      "source_text": "\r\n    -- A line that has become invalid must not stay in the fact table\r\n    DELETE f\r\n    FROM   dbo.FactSales f\r\n    JOIN   #enriched x ON x.SalesOrderDetailID = f.SalesOrderDetailID\r\n    WHERE  x.OrderQty <= 0 OR x.UnitPrice < 0 OR x.ProductKey IS NULL;",
+      "targets": [
+        "\r\n-- A line that has become invalid must not stay in the fact table\r\nDELETE FROM\r\n   <%salesdw%>.dbo.FactSales f\r\nUSING <%salesdw%>.PUBLIC.T_enriched x\r\nWHERE\r\n   x.OrderQty <= 0 OR x.UnitPrice < 0 OR x.ProductKey IS NULL\r\n   AND x.SalesOrderDetailID = f.SalesOrderDetailID;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 69,
+      "source_line_end": 100,
+      "source_text": "\r\n    -- Conditional Split: default output -> FactSales (upsert)\r\n    MERGE dbo.FactSales AS t\r\n    USING (\r\n        SELECT  SalesOrderDetailID,\r\n                OrderNumber,\r\n                CONVERT(INT, CONVERT(CHAR(8), OrderDate, 112))                      AS OrderDateKey,\r\n                ISNULL(CustomerKey, -1)                                             AS CustomerKey,\r\n                ProductKey,\r\n                Channel,\r\n                CASE Status WHEN 1 THEN N'Open' WHEN 2 THEN N'Shipped'\r\n                            WHEN 3 THEN N'Cancelled' ELSE N'Unknown' END            AS OrderStatus,\r\n                CAST(OrderQty AS INT)                                               AS Quantity,\r\n                CAST(UnitPrice AS DECIMAL(19,4))                                    AS UnitPrice,\r\n                CAST(ROUND(OrderQty * UnitPrice * UnitPriceDiscount, 4) AS DECIMAL(19,4)) AS DiscountAmount,\r\n                CAST(ROUND(OrderQty * UnitPrice * (1 - UnitPriceDiscount), 4) AS DECIMAL(19,4)) AS SalesAmount,\r\n                CAST(ROUND(OrderQty * StandardCost, 4) AS DECIMAL(19,4))            AS CostAmount\r\n        FROM    #enriched\r\n        WHERE   OrderQty > 0 AND UnitPrice >= 0 AND ProductKey IS NOT NULL\r\n    ) AS s\r\n    ON t.SalesOrderDetailID = s.SalesOrderDetailID\r\n    WHEN MATCHED THEN UPDATE SET\r\n        OrderNumber = s.OrderNumber, OrderDateKey = s.OrderDateKey, CustomerKey = s.CustomerKey,\r\n        ProductKey = s.ProductKey, Channel = s.Channel, OrderStatus = s.OrderStatus,\r\n        Quantity = s.Quantity, UnitPrice = s.UnitPrice, DiscountAmount = s.DiscountAmount,\r\n        SalesAmount = s.SalesAmount, CostAmount = s.CostAmount,\r\n        MarginAmount = s.SalesAmount - s.CostAmount, LoadDate = SYSDATETIME()\r\n    WHEN NOT MATCHED BY TARGET THEN INSERT\r\n        (SalesOrderDetailID, OrderNumber, OrderDateKey, CustomerKey, ProductKey, Channel, OrderStatus,\r\n         Quantity, UnitPrice, DiscountAmount, SalesAmount, CostAmount, MarginAmount, LoadDate)\r\n        VALUES\r\n        (s.SalesOrderDetailID, s.OrderNumber, s.OrderDateKey, s.CustomerKey, s.ProductKey, s.Channel, s.OrderStatus,\r\n         s.Quantity, s.UnitPrice, s.DiscountAmount, s.SalesAmount, s.CostAmount,\r\n         s.SalesAmount - s.CostAmount, SYSDATETIME());",
+      "targets": [
+        "\r\n-- Conditional Split: default output -> FactSales (upsert)\r\nMERGE INTO <%salesdw%>.dbo.FactSales AS t\r\nUSING (\r\n       SELECT\r\n          SalesOrderDetailID,\r\n          OrderNumber,\r\n          CAST(LEFT(TO_VARCHAR(OrderDate, 'yyyymmdd'), 8) AS INT) AS OrderDateKey,\r\n          NVL(CustomerKey, -1)                                             AS CustomerKey,\r\n          ProductKey,\r\n          Channel,\r\n               CASE\r\n             Status\r\n             WHEN 1 THEN 'Open'\r\n             WHEN 2 THEN 'Shipped'\r\n                           WHEN 3 THEN 'Cancelled'\r\n             ELSE 'Unknown'\r\n          END            AS OrderStatus,\r\n               CAST(OrderQty AS INT)                                               AS Quantity,\r\n               CAST(UnitPrice AS DECIMAL(19, 4))                                    AS UnitPrice,\r\n               CAST(ROUND(OrderQty * UnitPrice * UnitPriceDiscount, 4) AS DECIMAL(19, 4)) AS DiscountAmount,\r\n               CAST(ROUND(OrderQty * UnitPrice * (1 - UnitPriceDiscount), 4) AS DECIMAL(19, 4)) AS SalesAmount,\r\n               CAST(ROUND(OrderQty * StandardCost, 4) AS DECIMAL(19, 4))            AS CostAmount\r\n       FROM\r\n          <%salesdw%>.PUBLIC.T_enriched\r\n       WHERE\r\n          OrderQty > 0 AND UnitPrice >= 0 AND ProductKey IS NOT NULL\r\n   ) AS s\r\nON t.SalesOrderDetailID = s.SalesOrderDetailID\r\nWHEN MATCHED THEN\r\n       UPDATE SET\r\n          OrderNumber = s.OrderNumber,\r\n          OrderDateKey = s.OrderDateKey,\r\n          CustomerKey = s.CustomerKey,\r\n          ProductKey = s.ProductKey,\r\n          Channel = s.Channel,\r\n          OrderStatus = s.OrderStatus,\r\n          Quantity = s.Quantity,\r\n          UnitPrice = s.UnitPrice,\r\n          DiscountAmount = s.DiscountAmount,\r\n          SalesAmount = s.SalesAmount,\r\n          CostAmount = s.CostAmount,\r\n          MarginAmount = s.SalesAmount - s.CostAmount,\r\n          LoadDate = CURRENT_TIMESTAMP()\r\nWHEN NOT MATCHED THEN\r\n       INSERT\r\n       (SalesOrderDetailID, OrderNumber, OrderDateKey, CustomerKey, ProductKey, Channel, OrderStatus, Quantity, UnitPrice, DiscountAmount, SalesAmount, CostAmount, MarginAmount, LoadDate)\r\n       VALUES\r\n       (s.SalesOrderDetailID, s.OrderNumber, s.OrderDateKey, s.CustomerKey, s.ProductKey, s.Channel, s.OrderStatus, s.Quantity, s.UnitPrice, s.DiscountAmount, s.SalesAmount, s.CostAmount, s.SalesAmount - s.CostAmount, CURRENT_TIMESTAMP());"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.AnsiSql.AST.SqlSelect",
+      "source_line_start": 71,
+      "source_line_end": 85,
+      "source_text": "        SELECT  SalesOrderDetailID,\r\n                OrderNumber,\r\n                CONVERT(INT, CONVERT(CHAR(8), OrderDate, 112))                      AS OrderDateKey,\r\n                ISNULL(CustomerKey, -1)                                             AS CustomerKey,\r\n                ProductKey,\r\n                Channel,\r\n                CASE Status WHEN 1 THEN N'Open' WHEN 2 THEN N'Shipped'\r\n                            WHEN 3 THEN N'Cancelled' ELSE N'Unknown' END            AS OrderStatus,\r\n                CAST(OrderQty AS INT)                                               AS Quantity,\r\n                CAST(UnitPrice AS DECIMAL(19,4))                                    AS UnitPrice,\r\n                CAST(ROUND(OrderQty * UnitPrice * UnitPriceDiscount, 4) AS DECIMAL(19,4)) AS DiscountAmount,\r\n                CAST(ROUND(OrderQty * UnitPrice * (1 - UnitPriceDiscount), 4) AS DECIMAL(19,4)) AS SalesAmount,\r\n                CAST(ROUND(OrderQty * StandardCost, 4) AS DECIMAL(19,4))            AS CostAmount\r\n        FROM    #enriched\r\n        WHERE   OrderQty > 0 AND UnitPrice >= 0 AND ProductKey IS NOT NULL",
+      "targets": [
+        "        SELECT\r\n                   SalesOrderDetailID,\r\n                   OrderNumber,\r\n                   CAST(LEFT(TO_VARCHAR(OrderDate, 'yyyymmdd'), 8) AS INT) AS OrderDateKey,\r\n                   NVL(CustomerKey, -1)                                             AS CustomerKey,\r\n                   ProductKey,\r\n                   Channel,\r\n                   CASE\r\n                      Status\r\n                      WHEN 1 THEN 'Open'\r\n                      WHEN 2 THEN 'Shipped'\r\n                               WHEN 3 THEN 'Cancelled'\r\n                      ELSE 'Unknown'\r\n                   END            AS OrderStatus,\r\n                   CAST(OrderQty AS INT)                                               AS Quantity,\r\n                   CAST(UnitPrice AS DECIMAL(19, 4))                                    AS UnitPrice,\r\n                   CAST(ROUND(OrderQty * UnitPrice * UnitPriceDiscount, 4) AS DECIMAL(19, 4)) AS DiscountAmount,\r\n                   CAST(ROUND(OrderQty * UnitPrice * (1 - UnitPriceDiscount), 4) AS DECIMAL(19, 4)) AS SalesAmount,\r\n                   CAST(ROUND(OrderQty * StandardCost, 4) AS DECIMAL(19, 4))            AS CostAmount\r\n        FROM\r\n                   <%salesdw%>.PUBLIC.T_enriched\r\n        WHERE\r\n                   OrderQty > 0 AND UnitPrice >= 0 AND ProductKey IS NOT NULL"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 101,
+      "source_line_end": 101,
+      "source_text": "    SET @RowsLoaded = @@ROWCOUNT;",
+      "targets": [
+        "ROWSLOADED := SQLROWCOUNT;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 104,
+      "source_line_end": 104,
+      "source_text": "\r\n    -- Update Watermark (Execute SQL Task)\r\n    SELECT @newWm = MAX(ChangeDate) FROM #lines;",
+      "targets": [
+        "\r\n    -- Update Watermark (Execute SQL Task)\r\n    SELECT\r\n       MAX(ChangeDate)\r\n    INTO\r\n       :NEWWM\r\n FROM\r\n       <%salesdw%>.PUBLIC.T_lines;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 105,
+      "source_line_end": 106,
+      "source_text": "    IF @newWm IS NOT NULL\r\n        UPDATE etl.Watermark SET LoadDate = @newWm WHERE TableName = N'FactSales';",
+      "targets": [
+        "IF (:NEWWM IS NOT NULL) THEN\r\n   UPDATE <%salesdw%>.etl.Watermark\r\n      SET\r\n         LoadDate = :NEWWM\r\n      WHERE\r\n         TableName = 'FactSales';\r\nEND IF;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 106,
+      "source_line_end": 106,
+      "source_text": "        UPDATE etl.Watermark SET LoadDate = @newWm WHERE TableName = N'FactSales';",
+      "targets": [
+        "        UPDATE <%salesdw%>.etl.Watermark\r\n           SET\r\n              LoadDate = :NEWWM\r\n           WHERE\r\n              TableName = 'FactSales';"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 108,
+      "source_line_end": 108,
+      "source_text": "\r\n    COMMIT;",
+      "targets": [
+        "COMMIT;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 110,
+      "source_line_end": 110,
+      "source_text": "\r\n    DROP TABLE #enriched;",
+      "targets": [
+        "DROP TABLE IF EXISTS <%salesdw%>.PUBLIC.T_enriched;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 111,
+      "source_line_end": 111,
+      "source_text": "    DROP TABLE #lines;",
+      "targets": [
+        "DROP TABLE IF EXISTS <%salesdw%>.PUBLIC.T_lines;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_factsales.sql"
+    }
+  ],
+  "nodes": [
+    {
+      "node_type": "DDL_PROCEDURE",
+      "depth": 0,
+      "offset": 18,
+      "start_line": 5,
+      "start_column": 0,
+      "end_line": 112,
+      "end_column": 5,
+      "target_tables": [],
+      "source_text": "CREATE OR ALTER PROCEDURE etl.usp_Load_FactSales\r\n    @RowsLoaded   INT OUTPUT,\r\n    @RowsRejected INT OUTPUT\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    DECLARE @wm DATETIME2(3), @newWm DATETIME2(3);\r\n\r\n    SELECT @wm = LoadDate FROM etl.Watermark WHERE TableName = N'FactSales';\r\n    SET @wm = ISNULL(@wm, '1900-01-01');\r\n\r\n    -- Source: lines whose line or header changed since the last load\r\n    SELECT  d.SalesOrderDetailID,\r\n            h.OrderNumber,\r\n            h.OrderDate,\r\n            h.CustomerID,\r\n            d.ProductID,\r\n            h.Channel,\r\n            h.Status,\r\n            d.OrderQty,\r\n            d.UnitPrice,\r\n            d.UnitPriceDiscount,\r\n            CASE WHEN d.ModifiedDate > h.ModifiedDate THEN d.ModifiedDate ELSE h.ModifiedDate END AS ChangeDate\r\n    INTO    #lines\r\n    FROM    SalesOLTP.dbo.SalesOrderDetail d WITH (NOLOCK)\r\n    JOIN    SalesOLTP.dbo.SalesOrderHeader h WITH (NOLOCK) ON h.SalesOrderID = d.SalesOrderID\r\n    WHERE   d.ModifiedDate > @wm OR h.ModifiedDate > @wm;\r\n\r\n    -- Lookups (no match -> NULL key, caught by the split below)\r\n    SELECT  l.*,\r\n            c.CustomerKey,\r\n            p.ProductKey,\r\n            p.StandardCost\r\n    INTO    #enriched\r\n    FROM    #lines l\r\n    LEFT JOIN dbo.DimCustomer c ON c.CustomerID = l.CustomerID AND c.IsCurrent = 1\r\n    LEFT JOIN dbo.DimProduct  p ON p.ProductID  = l.ProductID;\r\n\r\n    BEGIN TRAN;\r\n\r\n    -- Reprocessed lines: clear earlier errors so each line has one outcome\r\n    DELETE e\r\n    FROM   dbo.FactSales_Error e\r\n    JOIN   #enriched x ON x.SalesOrderDetailID = e.SalesOrderDetailID;\r\n\r\n    -- Conditional Split: error output\r\n    INSERT dbo.FactSales_Error (SalesOrderDetailID, ErrorReason, LoadDate)\r\n    SELECT SalesOrderDetailID,\r\n           CASE WHEN OrderQty <= 0       THEN N'Non-positive quantity'\r\n                WHEN UnitPrice < 0       THEN N'Negative unit price'\r\n                WHEN ProductKey IS NULL  THEN N'Product lookup no match'\r\n                WHEN CustomerKey IS NULL THEN N'Customer lookup no match' END,\r\n           SYSDATETIME()\r\n    FROM   #enriched\r\n    WHERE  OrderQty <= 0 OR UnitPrice < 0 OR ProductKey IS NULL OR CustomerKey IS NULL;\r\n    SET @RowsRejected = @@ROWCOUNT;\r\n\r\n    -- A line that has become invalid must not stay in the fact table\r\n    DELETE f\r\n    FROM   dbo.FactSales f\r\n    JOIN   #enriched x ON x.SalesOrderDetailID = f.SalesOrderDetailID\r\n    WHERE  x.OrderQty <= 0 OR x.UnitPrice < 0 OR x.ProductKey IS NULL;\r\n\r\n    -- Conditional Split: default output -> FactSales (upsert)\r\n    MERGE dbo.FactSales AS t\r\n    USING (\r\n        SELECT  SalesOrderDetailID,\r\n                OrderNumber,\r\n                CONVERT(INT, CONVERT(CHAR(8), OrderDate, 112))                      AS OrderDateKey,\r\n                ISNULL(CustomerKey, -1)                                             AS CustomerKey,\r\n                ProductKey,\r\n                Channel,\r\n                CASE Status WHEN 1 THEN N'Open' WHEN 2 THEN N'Shipped'\r\n                            WHEN 3 THEN N'Cancelled' ELSE N'Unknown' END            AS OrderStatus,\r\n                CAST(OrderQty AS INT)                                               AS Quantity,\r\n                CAST(UnitPrice AS DECIMAL(19,4))                                    AS UnitPrice,\r\n                CAST(ROUND(OrderQty * UnitPrice * UnitPriceDiscount, 4) AS DECIMAL(19,4)) AS DiscountAmount,\r\n                CAST(ROUND(OrderQty * UnitPrice * (1 - UnitPriceDiscount), 4) AS DECIMAL(19,4)) AS SalesAmount,\r\n                CAST(ROUND(OrderQty * StandardCost, 4) AS DECIMAL(19,4))            AS CostAmount\r\n        FROM    #enriched\r\n        WHERE   OrderQty > 0 AND UnitPrice >= 0 AND ProductKey IS NOT NULL\r\n    ) AS s\r\n    ON t.SalesOrderDetailID = s.SalesOrderDetailID\r\n    WHEN MATCHED THEN UPDATE SET\r\n        OrderNumber = s.OrderNumber, OrderDateKey = s.OrderDateKey, CustomerKey = s.CustomerKey,\r\n        ProductKey = s.ProductKey, Channel = s.Channel, OrderStatus = s.OrderStatus,\r\n        Quantity = s.Quantity, UnitPrice = s.UnitPrice, DiscountAmount = s.DiscountAmount,\r\n        SalesAmount = s.SalesAmount, CostAmount = s.CostAmount,\r\n        MarginAmount = s.SalesAmount - s.CostAmount, LoadDate = SYSDATETIME()\r\n    WHEN NOT MATCHED BY TARGET THEN INSERT\r\n        (SalesOrderDetailID, OrderNumber, OrderDateKey, CustomerKey, ProductKey, Channel, OrderStatus,\r\n         Quantity, UnitPrice, DiscountAmount, SalesAmount, CostAmount, MarginAmount, LoadDate)\r\n        VALUES\r\n        (s.SalesOrderDetailID, s.OrderNumber, s.OrderDateKey, s.CustomerKey, s.ProductKey, s.Channel, s.OrderStatus,\r\n         s.Quantity, s.UnitPrice, s.DiscountAmount, s.SalesAmount, s.CostAmount,\r\n         s.SalesAmount - s.CostAmount, SYSDATETIME());\r\n    SET @RowsLoaded = @@ROWCOUNT;\r\n\r\n    -- Update Watermark (Execute SQL Task)\r\n    SELECT @newWm = MAX(ChangeDate) FROM #lines;\r\n    IF @newWm IS NOT NULL\r\n        UPDATE etl.Watermark SET LoadDate = @newWm WHERE TableName = N'FactSales';\r\n\r\n    COMMIT;\r\n\r\n    DROP TABLE #enriched;\r\n    DROP TABLE #lines;\r\nEND;",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DQL_SELECT",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 219,
+      "start_line": 13,
+      "start_column": 5,
+      "end_line": 13,
+      "end_column": 76,
+      "target_tables": [],
+      "source_text": "SELECT @wm = LoadDate FROM etl.Watermark WHERE TableName = N'FactSales'",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DQL_SELECT",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 412,
+      "start_line": 17,
+      "start_column": 5,
+      "end_line": 31,
+      "end_column": 57,
+      "target_tables": [],
+      "source_text": "SELECT  d.SalesOrderDetailID,\r\n            h.OrderNumber,\r\n            h.OrderDate,\r\n            h.CustomerID,\r\n            d.ProductID,\r\n            h.Channel,\r\n            h.Status,\r\n            d.OrderQty,\r\n            d.UnitPrice,\r\n            d.UnitPriceDiscount,\r\n            CASE WHEN d.ModifiedDate > h.ModifiedDate THEN d.ModifiedDate ELSE h.ModifiedDate END AS ChangeDate\r\n    INTO    #lines\r\n    FROM    SalesOLTP.dbo.SalesOrderDetail d WITH (NOLOCK)\r\n    JOIN    SalesOLTP.dbo.SalesOrderHeader h WITH (NOLOCK) ON h.SalesOrderID = d.SalesOrderID\r\n    WHERE   d.ModifiedDate > @wm OR h.ModifiedDate > @wm",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DQL_SELECT",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 1101,
+      "start_line": 34,
+      "start_column": 5,
+      "end_line": 41,
+      "end_column": 62,
+      "target_tables": [],
+      "source_text": "SELECT  l.*,\r\n            c.CustomerKey,\r\n            p.ProductKey,\r\n            p.StandardCost\r\n    INTO    #enriched\r\n    FROM    #lines l\r\n    LEFT JOIN dbo.DimCustomer c ON c.CustomerID = l.CustomerID AND c.IsCurrent = 1\r\n    LEFT JOIN dbo.DimProduct  p ON p.ProductID  = l.ProductID",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DML_DELETE",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 1493,
+      "start_line": 46,
+      "start_column": 5,
+      "end_line": 48,
+      "end_column": 70,
+      "target_tables": [
+        "dbo.factsales_error"
+      ],
+      "source_text": "DELETE e\r\n    FROM   dbo.FactSales_Error e\r\n    JOIN   #enriched x ON x.SalesOrderDetailID = e.SalesOrderDetailID",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DML_INSERT",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 1655,
+      "start_line": 51,
+      "start_column": 5,
+      "end_line": 59,
+      "end_column": 87,
+      "target_tables": [
+        "dbo.factsales_error"
+      ],
+      "source_text": "INSERT dbo.FactSales_Error (SalesOrderDetailID, ErrorReason, LoadDate)\r\n    SELECT SalesOrderDetailID,\r\n           CASE WHEN OrderQty <= 0       THEN N'Non-positive quantity'\r\n                WHEN UnitPrice < 0       THEN N'Negative unit price'\r\n                WHEN ProductKey IS NULL  THEN N'Product lookup no match'\r\n                WHEN CustomerKey IS NULL THEN N'Customer lookup no match' END,\r\n           SYSDATETIME()\r\n    FROM   #enriched\r\n    WHERE  OrderQty <= 0 OR UnitPrice < 0 OR ProductKey IS NULL OR CustomerKey IS NULL",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DML_DELETE",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 2306,
+      "start_line": 63,
+      "start_column": 5,
+      "end_line": 66,
+      "end_column": 70,
+      "target_tables": [
+        "dbo.factsales"
+      ],
+      "source_text": "DELETE f\r\n    FROM   dbo.FactSales f\r\n    JOIN   #enriched x ON x.SalesOrderDetailID = f.SalesOrderDetailID\r\n    WHERE  x.OrderQty <= 0 OR x.UnitPrice < 0 OR x.ProductKey IS NULL",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DML_MERGE",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 2557,
+      "start_line": 69,
+      "start_column": 5,
+      "end_line": 100,
+      "end_column": 54,
+      "target_tables": [
+        "dbo.factsales"
+      ],
+      "source_text": "MERGE dbo.FactSales AS t\r\n    USING (\r\n        SELECT  SalesOrderDetailID,\r\n                OrderNumber,\r\n                CONVERT(INT, CONVERT(CHAR(8), OrderDate, 112))                      AS OrderDateKey,\r\n                ISNULL(CustomerKey, -1)                                             AS CustomerKey,\r\n                ProductKey,\r\n                Channel,\r\n                CASE Status WHEN 1 THEN N'Open' WHEN 2 THEN N'Shipped'\r\n                            WHEN 3 THEN N'Cancelled' ELSE N'Unknown' END            AS OrderStatus,\r\n                CAST(OrderQty AS INT)                                               AS Quantity,\r\n                CAST(UnitPrice AS DECIMAL(19,4))                                    AS UnitPrice,\r\n                CAST(ROUND(OrderQty * UnitPrice * UnitPriceDiscount, 4) AS DECIMAL(19,4)) AS DiscountAmount,\r\n                CAST(ROUND(OrderQty * UnitPrice * (1 - UnitPriceDiscount), 4) AS DECIMAL(19,4)) AS SalesAmount,\r\n                CAST(ROUND(OrderQty * StandardCost, 4) AS DECIMAL(19,4))            AS CostAmount\r\n        FROM    #enriched\r\n        WHERE   OrderQty > 0 AND UnitPrice >= 0 AND ProductKey IS NOT NULL\r\n    ) AS s\r\n    ON t.SalesOrderDetailID = s.SalesOrderDetailID\r\n    WHEN MATCHED THEN UPDATE SET\r\n        OrderNumber = s.OrderNumber, OrderDateKey = s.OrderDateKey, CustomerKey = s.CustomerKey,\r\n        ProductKey = s.ProductKey, Channel = s.Channel, OrderStatus = s.OrderStatus,\r\n        Quantity = s.Quantity, UnitPrice = s.UnitPrice, DiscountAmount = s.DiscountAmount,\r\n        SalesAmount = s.SalesAmount, CostAmount = s.CostAmount,\r\n        MarginAmount = s.SalesAmount - s.CostAmount, LoadDate = SYSDATETIME()\r\n    WHEN NOT MATCHED BY TARGET THEN INSERT\r\n        (SalesOrderDetailID, OrderNumber, OrderDateKey, CustomerKey, ProductKey, Channel, OrderStatus,\r\n         Quantity, UnitPrice, DiscountAmount, SalesAmount, CostAmount, MarginAmount, LoadDate)\r\n        VALUES\r\n        (s.SalesOrderDetailID, s.OrderNumber, s.OrderDateKey, s.CustomerKey, s.ProductKey, s.Channel, s.OrderStatus,\r\n         s.Quantity, s.UnitPrice, s.DiscountAmount, s.SalesAmount, s.CostAmount,\r\n         s.SalesAmount - s.CostAmount, SYSDATETIME())",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DQL_SELECT",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 4835,
+      "start_line": 104,
+      "start_column": 5,
+      "end_line": 104,
+      "end_column": 48,
+      "target_tables": [],
+      "source_text": "SELECT @newWm = MAX(ChangeDate) FROM #lines",
+      "parse_failed": false
+    },
+    {
+      "node_type": "IF_THEN",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 4885,
+      "start_line": 105,
+      "start_column": 5,
+      "end_line": 106,
+      "end_column": 83,
+      "predicate": "@newWm IS NOT NULL",
+      "target_tables": [],
+      "source_text": "IF @newWm IS NOT NULL\r\n        UPDATE etl.Watermark SET LoadDate = @newWm WHERE TableName = N'FactSales';",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DML_UPDATE",
+      "parent_index": 9,
+      "depth": 2,
+      "offset": 4916,
+      "start_line": 106,
+      "start_column": 9,
+      "end_line": 106,
+      "end_column": 82,
+      "target_tables": [
+        "etl.watermark"
+      ],
+      "source_text": "UPDATE etl.Watermark SET LoadDate = @newWm WHERE TableName = N'FactSales'",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DDL_DROP_TABLE",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 5013,
+      "start_line": 110,
+      "start_column": 5,
+      "end_line": 110,
+      "end_column": 25,
+      "target_tables": [
+        "#enriched"
+      ],
+      "source_text": "DROP TABLE #enriched",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DDL_DROP_TABLE",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 5040,
+      "start_line": 111,
+      "start_column": 5,
+      "end_line": 111,
+      "end_column": 22,
+      "target_tables": [
+        "#lines"
+      ],
+      "source_text": "DROP TABLE #lines",
+      "parse_failed": false
+    }
+  ]
+}

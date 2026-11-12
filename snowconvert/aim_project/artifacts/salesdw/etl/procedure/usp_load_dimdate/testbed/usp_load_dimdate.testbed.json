@@ -1,0 +1,79 @@
+{
+  "object": "SalesDW.etl.usp_Load_DimDate(DATE,DATE,INT)",
+  "object_type": "PROCEDURE",
+  "branches": [
+    {
+      "branch_id": 1,
+      "construct_kind": "WHILE",
+      "line": 16,
+      "predicate_text": "@d <= @EndDate",
+      "columns": [],
+      "diagnostics": [
+        {
+          "reason": "non_algebraic_comparison",
+          "expression": "SqlLtEq"
+        }
+      ]
+    },
+    {
+      "branch_id": 0,
+      "construct_kind": "IF",
+      "line": 18,
+      "predicate_text": "NOT EXISTS (SELECT 1 FROM dbo.DimDate WHERE DateKey = CONVERT(INT, CONVERT(CHAR(8), @d, 112)))",
+      "columns": [],
+      "diagnostics": [
+        {
+          "reason": "unsupported_expression",
+          "expression": "SqlNot"
+        }
+      ]
+    }
+  ],
+  "predicates": [],
+  "edges": [],
+  "assignments": [],
+  "semi_anti": [
+    {
+      "kind": "ANTI",
+      "table": "dbo.DimDate",
+      "columns": []
+    }
+  ],
+  "schema_version": 1,
+  "parameters": [
+    {
+      "name": "@StartDate",
+      "type": "DATE",
+      "param_kind": "business_scalar",
+      "is_integer": false,
+      "is_number": false,
+      "is_string": false,
+      "is_date": true,
+      "is_boolean": false,
+      "is_binary": false
+    },
+    {
+      "name": "@EndDate",
+      "type": "DATE",
+      "param_kind": "business_scalar",
+      "is_integer": false,
+      "is_number": false,
+      "is_string": false,
+      "is_date": true,
+      "is_boolean": false,
+      "is_binary": false
+    },
+    {
+      "name": "@RowsAdded",
+      "type": "INT",
+      "param_kind": "business_scalar",
+      "direction": "out",
+      "is_integer": true,
+      "is_number": true,
+      "is_string": false,
+      "is_date": false,
+      "is_boolean": false,
+      "is_binary": false
+    }
+  ]
+}

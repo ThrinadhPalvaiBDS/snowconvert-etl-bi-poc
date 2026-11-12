@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.1",
+  "source_system": "sql",
+  "engine_version": "2.54.0-Pr",
+  "source_file": "defaultdb/dbo/table/salesorderheader.sql",
+  "source_checksum": "ebe41741d9750db2fef0acca9500287748890bfa2e575998f56d4e3c0ae202ae",
+  "pairs": [
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlUseStatement",
+      "source_line_start": 1,
+      "source_line_end": 1,
+      "source_text": "USE defaultdb",
+      "targets": [
+        "USE DATABASE <%defaultdb%>"
+      ],
+      "target_file": "defaultdb/dbo/table/salesorderheader.sql"
+    }
+  ],
+  "nodes": [
+    {
+      "node_type": "DDL_CREATE_TABLE",
+      "depth": 0,
+      "offset": 19,
+      "start_line": 5,
+      "start_column": 0,
+      "end_line": 14,
+      "end_column": 2,
+      "target_tables": [
+        "dbo.salesorderheader"
+      ],
+      "source_text": "CREATE TABLE dbo.SalesOrderHeader (\n    SalesOrderID    INT IDENTITY(1,1) PRIMARY KEY,\n    OrderNumber     NVARCHAR(25)  NOT NULL,\n    CustomerID      INT           NOT NULL REFERENCES dbo.Customer(CustomerID),\n    OrderDate       DATETIME2(3)  NOT NULL,\n    Status          TINYINT       NOT NULL,   -- 1=Open 2=Shipped 3=Cancelled\n    Channel         NVARCHAR(20)  NOT NULL,   -- Web / Store / Partner\n    CurrencyCode    CHAR(3)       NOT NULL,\n    ModifiedDate    DATETIME2(3)  NOT NULL DEFAULT SYSUTCDATETIME()\n)",
+      "parse_failed": false
+    }
+  ]
+}

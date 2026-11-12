@@ -1,0 +1,45 @@
+{
+  "object": "SalesDW.etl.usp_Load_SalesDW()",
+  "object_type": "PROCEDURE",
+  "branches": [
+    {
+      "branch_id": 0,
+      "construct_kind": "IF",
+      "line": 23,
+      "predicate_text": "@MinDate IS NOT NULL",
+      "columns": [],
+      "predicate": {
+        "kind": "atom",
+        "operator": "IS NOT NULL",
+        "values": [],
+        "parameter": "@MinDate",
+        "operands": [
+          {
+            "kind": "parameter",
+            "parameter": "@MinDate",
+            "text": "@MinDate"
+          }
+        ]
+      }
+    },
+    {
+      "branch_id": 1,
+      "construct_kind": "IF",
+      "line": 47,
+      "predicate_text": "@@TRANCOUNT > 0",
+      "columns": [],
+      "construct_sub_kind": "transaction-state",
+      "diagnostics": [
+        {
+          "reason": "non_algebraic_comparison",
+          "expression": "SqlGt"
+        }
+      ]
+    }
+  ],
+  "predicates": [],
+  "edges": [],
+  "assignments": [],
+  "semi_anti": [],
+  "schema_version": 1
+}

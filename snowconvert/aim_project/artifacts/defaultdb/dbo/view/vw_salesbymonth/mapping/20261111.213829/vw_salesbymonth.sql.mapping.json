@@ -1,0 +1,45 @@
+{
+  "schema_version": "1.1",
+  "source_system": "sql",
+  "engine_version": "2.54.0-Pr",
+  "source_file": "defaultdb/dbo/view/vw_salesbymonth.sql",
+  "source_checksum": "8a356b05d919df52c196e5a4861b25d811a2f1cfcb73397bddd092ec73cf5847",
+  "pairs": [
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlUseStatement",
+      "source_line_start": 1,
+      "source_line_end": 1,
+      "source_text": "USE defaultdb",
+      "targets": [
+        "USE DATABASE <%defaultdb%>"
+      ],
+      "target_file": "defaultdb/dbo/view/vw_salesbymonth.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.AnsiSql.AST.SqlSelect",
+      "source_line_start": 6,
+      "source_line_end": 12,
+      "source_text": "SELECT d.[Year], d.[Month], d.MonthName, c.Region, p.Category,\r\n       SUM(f.SalesAmount) AS SalesAmount, SUM(f.MarginAmount) AS MarginAmount\r\nFROM dbo.FactSales f\r\nJOIN dbo.DimDate d     ON d.DateKey = f.OrderDateKey\r\nJOIN dbo.DimCustomer c ON c.CustomerKey = f.CustomerKey\r\nJOIN dbo.DimProduct p  ON p.ProductKey = f.ProductKey\r\nGROUP BY d.[Year], d.[Month], d.MonthName, c.Region, p.Category",
+      "targets": [
+        "SELECT\r\n   d.Year,\r\n   d.Month,\r\n   d.MonthName,\r\n   c.Region,\r\n   p.Category,\r\n   SUM(f.SalesAmount) AS SalesAmount,\r\n   SUM(f.MarginAmount) AS MarginAmount\r\nFROM\r\n   dbo.FactSales f\r\n   JOIN\r\n      dbo.DimDate d\r\n      ON d.DateKey = f.OrderDateKey\r\n   JOIN\r\n      dbo.DimCustomer c\r\n      ON c.CustomerKey = f.CustomerKey\r\n   JOIN\r\n      dbo.DimProduct p\r\n      ON p.ProductKey = f.ProductKey\r\nGROUP BY\r\n   d.Year,\r\n   d.Month,\r\n   d.MonthName,\r\n   c.Region,\r\n   p.Category"
+      ],
+      "target_file": "defaultdb/dbo/view/vw_salesbymonth.sql"
+    }
+  ],
+  "nodes": [
+    {
+      "node_type": "DQL_SELECT",
+      "depth": 0,
+      "offset": 55,
+      "start_line": 6,
+      "start_column": 1,
+      "end_line": 12,
+      "end_column": 64,
+      "target_tables": [],
+      "source_text": "SELECT d.[Year], d.[Month], d.MonthName, c.Region, p.Category,\r\n       SUM(f.SalesAmount) AS SalesAmount, SUM(f.MarginAmount) AS MarginAmount\r\nFROM dbo.FactSales f\r\nJOIN dbo.DimDate d     ON d.DateKey = f.OrderDateKey\r\nJOIN dbo.DimCustomer c ON c.CustomerKey = f.CustomerKey\r\nJOIN dbo.DimProduct p  ON p.ProductKey = f.ProductKey\r\nGROUP BY d.[Year], d.[Month], d.MonthName, c.Region, p.Category",
+      "parse_failed": false
+    }
+  ]
+}

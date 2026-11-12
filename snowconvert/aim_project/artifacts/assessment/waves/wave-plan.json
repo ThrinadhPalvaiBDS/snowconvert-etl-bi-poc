@@ -1,0 +1,370 @@
+{
+  "schemaVersion": 1,
+  "generatedAt": "2026-11-11T16:30:29.339652Z",
+  "summary": {
+    "waveCount": 3,
+    "plannedObjectCount": 16,
+    "pendingObjectCount": 1,
+    "pendingWaveCount": 1
+  },
+  "waves": [
+    {
+      "waveNumber": 1,
+      "seed": {
+        "kind": "useCase",
+        "id": "nightly-sales-warehouse-load",
+        "name": "Nightly Sales Warehouse Load"
+      },
+      "objectCount": 7,
+      "rankCount": 3,
+      "sharedObjectCount": 0,
+      "metrics": {
+        "objectCount": 7,
+        "sqlObjectCount": 7,
+        "etlCount": 0,
+        "scriptCount": 0,
+        "macroCount": 0,
+        "bteqCount": 0,
+        "biCount": 0,
+        "schemaCount": 2,
+        "databaseCount": 2,
+        "loaderCount": 0,
+        "missingCount": 9,
+        "typeCounts": {
+          "FUNCTION": 1,
+          "PROCEDURE": 6
+        }
+      },
+      "conversion": {
+        "clean": 6,
+        "requiresAttention": 1,
+        "notConverted": 0,
+        "ewiCount": 1
+      },
+      "ranks": [
+        {
+          "rank": 1,
+          "objects": [
+            {
+              "id": "938f8e3f-95ff-4dde-a089-76dda789defd",
+              "name": "AIM_DB.PUBLIC.DATE_PART_WEEK_DAY_UDF",
+              "type": "FUNCTION",
+              "category": "sql",
+              "database": "AIM_DB",
+              "schema": "PUBLIC",
+              "isMissing": false,
+              "conversionStatus": "Success"
+            },
+            {
+              "id": "76c2418b-18a1-433e-aa76-e05da1a36082",
+              "name": "salesdw.etl.usp_Load_DimCustomer",
+              "type": "PROCEDURE",
+              "category": "sql",
+              "platform": "SqlServer",
+              "database": "salesdw",
+              "schema": "etl",
+              "isMissing": false,
+              "conversionStatus": "Success",
+              "sourcePath": "source/salesdw/etl/procedure/usp_load_dimcustomer.sql"
+            },
+            {
+              "id": "1e04a099-40f8-40b9-b62a-c8d4bd4f0068",
+              "name": "salesdw.etl.usp_Load_DimProduct",
+              "type": "PROCEDURE",
+              "category": "sql",
+              "platform": "SqlServer",
+              "database": "salesdw",
+              "schema": "etl",
+              "isMissing": false,
+              "conversionStatus": "Success",
+              "sourcePath": "source/salesdw/etl/procedure/usp_load_dimproduct.sql"
+            },
+            {
+              "id": "49c00828-ddc7-4828-9348-3e450efda71b",
+              "name": "salesdw.etl.usp_Load_FactSales",
+              "type": "PROCEDURE",
+              "category": "sql",
+              "platform": "SqlServer",
+              "database": "salesdw",
+              "schema": "etl",
+              "isMissing": false,
+              "conversionStatus": "Success",
+              "sourcePath": "source/salesdw/etl/procedure/usp_load_factsales.sql"
+            },
+            {
+              "id": "7a351da7-cefa-4ff6-9e8f-7ae347e40bd3",
+              "name": "salesdw.etl.usp_LogStep",
+              "type": "PROCEDURE",
+              "category": "sql",
+              "platform": "SqlServer",
+              "database": "salesdw",
+              "schema": "etl",
+              "isMissing": false,
+              "conversionStatus": "Success",
+              "sourcePath": "source/salesdw/etl/procedure/usp_logstep.sql"
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "objects": [
+            {
+              "id": "9239956b-39d2-497b-8617-703e4489b1b9",
+              "name": "salesdw.etl.usp_Load_DimDate",
+              "type": "PROCEDURE",
+              "category": "sql",
+              "platform": "SqlServer",
+              "database": "salesdw",
+              "schema": "etl",
+              "isMissing": false,
+              "conversionStatus": "Success",
+              "sourcePath": "source/salesdw/etl/procedure/usp_load_dimdate.sql"
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "objects": [
+            {
+              "id": "20c0bb2b-05ec-4ad4-84a8-6cafdf3a47e8",
+              "name": "salesdw.etl.usp_Load_SalesDW",
+              "type": "PROCEDURE",
+              "category": "sql",
+              "platform": "SqlServer",
+              "database": "salesdw",
+              "schema": "etl",
+              "isMissing": false,
+              "conversionStatus": "Require Attention",
+              "sourcePath": "source/salesdw/etl/procedure/usp_load_salesdw.sql"
+            }
+          ]
+        }
+      ],
+      "missingIds": [
+        "32af992c-c471-4929-b6c9-32f4b2b3e9c9",
+        "380d0cb6-f5e4-429e-b7fd-d16ffe58b926",
+        "51294c08-585a-4d0d-a561-9dee0785ab61",
+        "67229d81-462d-4a42-bab2-02aa7c1b9f53",
+        "6e72d51c-4a65-4d0a-854b-bdd5631b800d",
+        "788668ae-4c6d-433f-9ebc-3e9dc6dc6259",
+        "88d57d3d-e3dd-4357-bc0f-8b0f9ed0fd53",
+        "af4ede02-5ac5-409e-a572-47cf7bc61d69",
+        "c94df544-de8c-4a6d-972c-22274fe9bc17"
+      ]
+    },
+    {
+      "waveNumber": 2,
+      "seed": {
+        "kind": "useCase",
+        "id": "monthly-sales-margin-reporting",
+        "name": "Monthly Sales and Margin Reporting"
+      },
+      "objectCount": 9,
+      "rankCount": 3,
+      "sharedObjectCount": 0,
+      "metrics": {
+        "objectCount": 9,
+        "sqlObjectCount": 9,
+        "etlCount": 0,
+        "scriptCount": 0,
+        "macroCount": 0,
+        "bteqCount": 0,
+        "biCount": 0,
+        "schemaCount": 1,
+        "databaseCount": 1,
+        "loaderCount": 0,
+        "missingCount": 0,
+        "typeCounts": {
+          "TABLE": 8,
+          "VIEW": 1
+        }
+      },
+      "conversion": {
+        "clean": 9,
+        "requiresAttention": 0,
+        "notConverted": 0,
+        "ewiCount": 0
+      },
+      "ranks": [
+        {
+          "rank": 1,
+          "objects": [
+            {
+              "id": "bbbde689-12ac-4233-80ac-cd1b55f94610",
+              "name": "defaultdb.dbo.Customer",
+              "type": "TABLE",
+              "category": "sql",
+              "platform": "SqlServer",
+              "database": "defaultdb",
+              "schema": "dbo",
+              "isMissing": false,
+              "conversionStatus": "Success",
+              "sourcePath": "source/defaultdb/dbo/table/customer.sql"
+            },
+            {
+              "id": "1db5de20-a073-4486-8bd4-87a90e5cb570",
+              "name": "defaultdb.dbo.DimCustomer",
+              "type": "TABLE",
+              "category": "sql",
+              "platform": "SqlServer",
+              "database": "defaultdb",
+              "schema": "dbo",
+              "isMissing": false,
+              "conversionStatus": "Success",
+              "sourcePath": "source/defaultdb/dbo/table/dimcustomer.sql"
+            },
+            {
+              "id": "d5eb3fad-2de4-4da5-8492-b3091fa87d7b",
+              "name": "defaultdb.dbo.DimDate",
+              "type": "TABLE",
+              "category": "sql",
+              "platform": "SqlServer",
+              "database": "defaultdb",
+              "schema": "dbo",
+              "isMissing": false,
+              "conversionStatus": "Success",
+              "sourcePath": "source/defaultdb/dbo/table/dimdate.sql"
+            },
+            {
+              "id": "1c187abf-ca4a-4e9e-8806-6bbab7e37da6",
+              "name": "defaultdb.dbo.DimProduct",
+              "type": "TABLE",
+              "category": "sql",
+              "platform": "SqlServer",
+              "database": "defaultdb",
+              "schema": "dbo",
+              "isMissing": false,
+              "conversionStatus": "Success",
+              "sourcePath": "source/defaultdb/dbo/table/dimproduct.sql"
+            },
+            {
+              "id": "821de612-bddd-462d-8d4e-8c298ddc49a2",
+              "name": "defaultdb.dbo.FactSales",
+              "type": "TABLE",
+              "category": "sql",
+              "platform": "SqlServer",
+              "database": "defaultdb",
+              "schema": "dbo",
+              "isMissing": false,
+              "conversionStatus": "Success",
+              "sourcePath": "source/defaultdb/dbo/table/factsales.sql"
+            },
+            {
+              "id": "1d4d6779-f0d0-4dbc-9435-18c30b2524e8",
+              "name": "defaultdb.dbo.Product",
+              "type": "TABLE",
+              "category": "sql",
+              "platform": "SqlServer",
+              "database": "defaultdb",
+              "schema": "dbo",
+              "isMissing": false,
+              "conversionStatus": "Success",
+              "sourcePath": "source/defaultdb/dbo/table/product.sql"
+            }
+          ]
+        },
+        {
+          "rank": 2,
+          "objects": [
+            {
+              "id": "0794492e-46a6-4bdf-9a7f-959e47cadb24",
+              "name": "defaultdb.dbo.SalesOrderHeader",
+              "type": "TABLE",
+              "category": "sql",
+              "platform": "SqlServer",
+              "database": "defaultdb",
+              "schema": "dbo",
+              "isMissing": false,
+              "conversionStatus": "Success",
+              "sourcePath": "source/defaultdb/dbo/table/salesorderheader.sql"
+            },
+            {
+              "id": "67bb46d5-3272-485f-897f-b48e35da1924",
+              "name": "defaultdb.dbo.vw_SalesByMonth",
+              "type": "VIEW",
+              "category": "sql",
+              "platform": "SqlServer",
+              "database": "defaultdb",
+              "schema": "dbo",
+              "isMissing": false,
+              "conversionStatus": "Success",
+              "sourcePath": "source/defaultdb/dbo/view/vw_salesbymonth.sql"
+            }
+          ]
+        },
+        {
+          "rank": 3,
+          "objects": [
+            {
+              "id": "919a7163-e834-49c6-973d-8f4e49660f82",
+              "name": "defaultdb.dbo.SalesOrderDetail",
+              "type": "TABLE",
+              "category": "sql",
+              "platform": "SqlServer",
+              "database": "defaultdb",
+              "schema": "dbo",
+              "isMissing": false,
+              "conversionStatus": "Success",
+              "sourcePath": "source/defaultdb/dbo/table/salesorderdetail.sql"
+            }
+          ]
+        }
+      ],
+      "missingIds": []
+    },
+    {
+      "waveNumber": 3,
+      "seed": {
+        "kind": "pending",
+        "id": "pending-1",
+        "name": "Wave 1"
+      },
+      "objectCount": 1,
+      "rankCount": 1,
+      "pendingObjectCount": 1,
+      "sharedObjectCount": 0,
+      "metrics": {
+        "objectCount": 1,
+        "sqlObjectCount": 1,
+        "etlCount": 0,
+        "scriptCount": 0,
+        "macroCount": 0,
+        "bteqCount": 0,
+        "biCount": 0,
+        "schemaCount": 1,
+        "databaseCount": 1,
+        "loaderCount": 0,
+        "missingCount": 0,
+        "typeCounts": {
+          "TABLE": 1
+        }
+      },
+      "conversion": {
+        "clean": 1,
+        "requiresAttention": 0,
+        "notConverted": 0,
+        "ewiCount": 0
+      },
+      "ranks": [
+        {
+          "rank": 1,
+          "objects": [
+            {
+              "id": "2bff029f-1f13-4e5e-9c06-7c8d956f9f41",
+              "name": "defaultdb.dbo.FactSales_Error",
+              "type": "TABLE",
+              "category": "sql",
+              "platform": "SqlServer",
+              "database": "defaultdb",
+              "schema": "dbo",
+              "isMissing": false,
+              "conversionStatus": "Success",
+              "sourcePath": "source/defaultdb/dbo/table/factsales_error.sql"
+            }
+          ]
+        }
+      ],
+      "missingIds": []
+    }
+  ]
+}

@@ -1,0 +1,50 @@
+{
+  "schemaVersion": 1,
+  "useCases": [
+    {
+      "id": "nightly-sales-warehouse-load",
+      "name": "Nightly Sales Warehouse Load",
+      "purpose": "Each night the sales order system is turned into warehouse facts and dimensions: order lines changed since the last run are revalued, customer history is kept, and rejected lines and run steps are recorded for data operations to follow up.",
+      "status": "confirmed",
+      "confidence": "high",
+      "origin": "seed",
+      "seedIds": ["20c0bb2b-05ec-4ad4-84a8-6cafdf3a47e8"],
+      "memberIds": [],
+      "whyFound": "usp_Load_SalesDW is the one object in the project that orchestrates other routines rather than being read: it calls usp_Load_DimDate over the order-date range, then usp_Load_DimProduct, usp_Load_DimCustomer and usp_Load_FactSales, logging every step through usp_LogStep and mailing DataOps on failure. That control flow, the run id it stamps on each step and the watermark it advances make it the load process of the warehouse, not a piece of plumbing.",
+      "howFound": "Order headers and lines are read from the SalesOLTP order system. Date coverage is extended first, then product and customer dimensions are refreshed, with customer handled as slowly changing history: the current row is closed and a new version inserted when city, country, region or segment changes. usp_Load_FactSales then picks up only lines whose line or header changed since the watermark, looks up the customer and product keys, splits lines with non-positive quantity, negative price or a failed lookup into FactSales_Error, and merges the rest into FactSales with discount, sales, cost and margin computed. Data operations read the step log and the rejected-row count.",
+      "enablesOnSnowflake": "On Snowflake this nightly chain becomes a scheduled task graph: the dimension and fact procedures run as stored procedures, the watermark read and update stay as they are, and the MERGE into FactSales maps directly. The row-by-row DATEPART weekday logic already converted to the DATE_PART_WEEK_DAY_UDF helper, and the one object needing attention is usp_Load_SalesDW itself, whose sp_send_dbmail failure notification has no Snowflake equivalent and must be replaced by task error notification. Because loads become incremental and elastic, the nightly window stops competing with the order system for capacity.",
+      "evidence": [
+        "source/salesdw/etl/procedure/usp_load_salesdw.sql - calls usp_Load_DimDate, usp_Load_DimProduct, usp_Load_DimCustomer, usp_Load_FactSales, usp_LogStep; sp_send_dbmail to DataOps on error",
+        "source/salesdw/etl/procedure/usp_load_factsales.sql - watermark read on etl.Watermark, conditional split into dbo.FactSales_Error, MERGE into dbo.FactSales with margin",
+        "source/salesdw/etl/procedure/usp_load_dimcustomer.sql - Type 2 history on DimCustomer over SalesOLTP.dbo.Customer"
+      ],
+      "openQuestions": [
+        "The nine SalesDW and SalesOLTP tables these procedures read and write were not delivered; their DDL is needed before the wave can deploy.",
+        "What schedules usp_Load_SalesDW today, and is etl.Watermark / etl.CountryRegion part of the migration scope?",
+        "Which channel should replace the sp_send_dbmail failure alert to thrinadhp@booleandata.ai?"
+      ]
+    },
+    {
+      "id": "monthly-sales-margin-reporting",
+      "name": "Monthly Sales and Margin Reporting",
+      "purpose": "Sales and margin are reported by month, customer region and product category from the delivered star schema, over the order header and line tables that record what was sold at what price and discount.",
+      "status": "confirmed",
+      "confidence": "medium",
+      "origin": "seed",
+      "seedIds": ["67bb46d5-3272-485f-897f-b48e35da1924"],
+      "memberIds": ["919a7163-e834-49c6-973d-8f4e49660f82"],
+      "whyFound": "vw_SalesByMonth is the only consumer in the project: nothing reads it, and it joins FactSales to all three dimensions and aggregates SalesAmount and MarginAmount by year, month, month name, region and category. That shape - a grouped join over a fact and its conformed dimensions - is a reporting output rather than a staging step, and it is the single place margin is exposed as a business figure instead of being computed inside a load.",
+      "howFound": "The view reads defaultdb.dbo.FactSales and joins DimDate on OrderDateKey, DimCustomer on CustomerKey and DimProduct on ProductKey, then sums sales and margin per month, region and category. Behind the fact sit the order tables in the same schema: SalesOrderHeader and SalesOrderDetail hold order quantity, unit price and discount per line, Product and Customer carry the descriptive attributes, and DimCustomer carries the region used for grouping. Whoever reads the monthly figures is not stated in the delivered code - no report or BI artifact in the project references the view.",
+      "enablesOnSnowflake": "All nine objects in this wave convert cleanly with no EWIs, so the star schema and the view can be deployed and queried first and used to prove the data migration. On Snowflake the aggregation runs over the fact table without a pre-built summary, so the month, region and category grouping can be widened or drilled into without new objects, and the view becomes a stable semantic layer that BI tools or Cortex Analyst can point at once the tables are loaded.",
+      "evidence": [
+        "source/defaultdb/dbo/view/vw_salesbymonth.sql - SUM(SalesAmount), SUM(MarginAmount) grouped by Year, Month, MonthName, Region, Category",
+        "source/defaultdb/dbo/table/salesorderdetail.sql - OrderQty, UnitPrice, UnitPriceDiscount per order line, keyed to SalesOrderHeader and Product",
+        "source/defaultdb/dbo/table/factsales.sql - fact grain keyed by SalesOrderDetailID with OrderDateKey, CustomerKey, ProductKey"
+      ],
+      "openQuestions": [
+        "Who reads the monthly sales and margin figures today, and through which tool? No consumer is stated in the delivered code.",
+        "The defaultdb copies of these tables are loaded by nothing in the project; the loaders target SalesDW and SalesOLTP instead, so confirm which set is the real target."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "schema_version": "1.1",
+  "source_system": "sql",
+  "engine_version": "2.54.0-Pr",
+  "source_file": "salesdw/etl/procedure/usp_load_dimproduct.sql",
+  "source_checksum": "d6258a57d1417b55a47443e0922d897420cb02b821ed126888886bfbe56dca3a",
+  "pairs": [
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlUseStatement",
+      "source_line_start": 1,
+      "source_line_end": 1,
+      "source_text": "USE SalesDW",
+      "targets": [
+        "USE DATABASE <%salesdw%>"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimproduct.sql"
+    },
+    {
+      "pair_kind": "absorbed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 8,
+      "source_line_end": 35,
+      "source_text": "BEGIN\r\n--    SET NOCOUNT ON;\r\n\r\n    MERGE dbo.DimProduct AS t\r\n    USING (\r\n        SELECT ProductID,\r\n               LTRIM(RTRIM(SKU))                                        AS SKU,\r\n               LTRIM(RTRIM(ProductName))                                AS ProductName,\r\n               ISNULL(NULLIF(LTRIM(RTRIM(Category)), N''), N'Unknown')    AS Category,\r\n               ISNULL(NULLIF(LTRIM(RTRIM(SubCategory)), N''), N'Unknown') AS SubCategory,\r\n               CAST(ListPrice    AS DECIMAL(19,4))                      AS ListPrice,\r\n               CAST(StandardCost AS DECIMAL(19,4))                      AS StandardCost,\r\n               IsActive\r\n        FROM SalesOLTP.dbo.Product WITH (NOLOCK)\r\n    ) AS s\r\n    ON t.ProductID = s.ProductID\r\n    WHEN MATCHED AND (t.SKU <> s.SKU OR t.ProductName <> s.ProductName OR t.Category <> s.Category\r\n                      OR t.SubCategory <> s.SubCategory OR t.ListPrice <> s.ListPrice\r\n                      OR t.StandardCost <> s.StandardCost OR t.IsActive <> s.IsActive)\r\n        THEN UPDATE SET SKU = s.SKU, ProductName = s.ProductName, Category = s.Category,\r\n                        SubCategory = s.SubCategory, ListPrice = s.ListPrice,\r\n                        StandardCost = s.StandardCost, IsActive = s.IsActive\r\n    WHEN NOT MATCHED BY TARGET\r\n        THEN INSERT (ProductID, SKU, ProductName, Category, SubCategory, ListPrice, StandardCost, IsActive)\r\n             VALUES (s.ProductID, s.SKU, s.ProductName, s.Category, s.SubCategory, s.ListPrice, s.StandardCost, s.IsActive);\r\n\r\n    SET @RowsAffected = @@ROWCOUNT;\r\nEND;",
+      "targets": [],
+      "target_file": "salesdw/etl/procedure/usp_load_dimproduct.sql"
+    },
+    {
+      "pair_kind": "unsupported",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 9,
+      "source_line_end": 9,
+      "source_text": "--    SET NOCOUNT ON;",
+      "targets": [
+        "--    SET NOCOUNT ON;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimproduct.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 11,
+      "source_line_end": 32,
+      "source_text": "\r\n    MERGE dbo.DimProduct AS t\r\n    USING (\r\n        SELECT ProductID,\r\n               LTRIM(RTRIM(SKU))                                        AS SKU,\r\n               LTRIM(RTRIM(ProductName))                                AS ProductName,\r\n               ISNULL(NULLIF(LTRIM(RTRIM(Category)), N''), N'Unknown')    AS Category,\r\n               ISNULL(NULLIF(LTRIM(RTRIM(SubCategory)), N''), N'Unknown') AS SubCategory,\r\n               CAST(ListPrice    AS DECIMAL(19,4))                      AS ListPrice,\r\n               CAST(StandardCost AS DECIMAL(19,4))                      AS StandardCost,\r\n               IsActive\r\n        FROM SalesOLTP.dbo.Product WITH (NOLOCK)\r\n    ) AS s\r\n    ON t.ProductID = s.ProductID\r\n    WHEN MATCHED AND (t.SKU <> s.SKU OR t.ProductName <> s.ProductName OR t.Category <> s.Category\r\n                      OR t.SubCategory <> s.SubCategory OR t.ListPrice <> s.ListPrice\r\n                      OR t.StandardCost <> s.StandardCost OR t.IsActive <> s.IsActive)\r\n        THEN UPDATE SET SKU = s.SKU, ProductName = s.ProductName, Category = s.Category,\r\n                        SubCategory = s.SubCategory, ListPrice = s.ListPrice,\r\n                        StandardCost = s.StandardCost, IsActive = s.IsActive\r\n    WHEN NOT MATCHED BY TARGET\r\n        THEN INSERT (ProductID, SKU, ProductName, Category, SubCategory, ListPrice, StandardCost, IsActive)\r\n             VALUES (s.ProductID, s.SKU, s.ProductName, s.Category, s.SubCategory, s.ListPrice, s.StandardCost, s.IsActive);",
+      "targets": [
+        "MERGE INTO <%salesdw%>.dbo.DimProduct AS t\r\nUSING (\r\n          SELECT\r\n             ProductID,\r\n             LTRIM(RTRIM(SKU))                                        AS SKU,\r\n             LTRIM(RTRIM(ProductName))                                AS ProductName,\r\n             NVL(NULLIF(LTRIM(RTRIM(Category)), ''), 'Unknown')    AS Category,\r\n             NVL(NULLIF(LTRIM(RTRIM(SubCategory)), ''), 'Unknown') AS SubCategory,\r\n                 CAST(ListPrice AS DECIMAL(19, 4))                      AS ListPrice,\r\n                 CAST(StandardCost AS DECIMAL(19, 4))                      AS StandardCost,\r\n             IsActive\r\n          FROM\r\n             <%salesoltp%>.dbo.Product\r\n      ) AS s\r\nON t.ProductID = s.ProductID\r\nWHEN MATCHED AND (t.SKU <> s.SKU\r\nOR t.ProductName <> s.ProductName\r\nOR t.Category <> s.Category\r\n                        OR t.SubCategory <> s.SubCategory\r\nOR t.ListPrice <> s.ListPrice\r\n                        OR t.StandardCost <> s.StandardCost\r\nOR t.IsActive <> s.IsActive) THEN\r\n          UPDATE SET\r\n             SKU = s.SKU,\r\n             ProductName = s.ProductName,\r\n             Category = s.Category,\r\n             SubCategory = s.SubCategory,\r\n             ListPrice = s.ListPrice,\r\n             StandardCost = s.StandardCost,\r\n             IsActive = s.IsActive\r\nWHEN NOT MATCHED THEN\r\n          INSERT (ProductID, SKU, ProductName, Category, SubCategory, ListPrice, StandardCost, IsActive)\r\n               VALUES (s.ProductID, s.SKU, s.ProductName, s.Category, s.SubCategory, s.ListPrice, s.StandardCost, s.IsActive);"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimproduct.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.AnsiSql.AST.SqlSelect",
+      "source_line_start": 13,
+      "source_line_end": 21,
+      "source_text": "        SELECT ProductID,\r\n               LTRIM(RTRIM(SKU))                                        AS SKU,\r\n               LTRIM(RTRIM(ProductName))                                AS ProductName,\r\n               ISNULL(NULLIF(LTRIM(RTRIM(Category)), N''), N'Unknown')    AS Category,\r\n               ISNULL(NULLIF(LTRIM(RTRIM(SubCategory)), N''), N'Unknown') AS SubCategory,\r\n               CAST(ListPrice    AS DECIMAL(19,4))                      AS ListPrice,\r\n               CAST(StandardCost AS DECIMAL(19,4))                      AS StandardCost,\r\n               IsActive\r\n        FROM SalesOLTP.dbo.Product WITH (NOLOCK)",
+      "targets": [
+        "        SELECT\r\n                  ProductID,\r\n                  LTRIM(RTRIM(SKU))                                        AS SKU,\r\n                  LTRIM(RTRIM(ProductName))                                AS ProductName,\r\n                  NVL(NULLIF(LTRIM(RTRIM(Category)), ''), 'Unknown')    AS Category,\r\n                  NVL(NULLIF(LTRIM(RTRIM(SubCategory)), ''), 'Unknown') AS SubCategory,\r\n                  CAST(ListPrice AS DECIMAL(19, 4))                      AS ListPrice,\r\n                  CAST(StandardCost AS DECIMAL(19, 4))                      AS StandardCost,\r\n                  IsActive\r\n        FROM\r\n                  <%salesoltp%>.dbo.Product"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimproduct.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 34,
+      "source_line_end": 34,
+      "source_text": "\r\n    SET @RowsAffected = @@ROWCOUNT;",
+      "targets": [
+        "ROWSAFFECTED := SQLROWCOUNT;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimproduct.sql"
+    }
+  ],
+  "nodes": [
+    {
+      "node_type": "DDL_PROCEDURE",
+      "depth": 0,
+      "offset": 18,
+      "start_line": 5,
+      "start_column": 0,
+      "end_line": 35,
+      "end_column": 5,
+      "target_tables": [],
+      "source_text": "CREATE OR ALTER PROCEDURE etl.usp_Load_DimProduct\r\n    @RowsAffected INT OUTPUT\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n\r\n    MERGE dbo.DimProduct AS t\r\n    USING (\r\n        SELECT ProductID,\r\n               LTRIM(RTRIM(SKU))                                        AS SKU,\r\n               LTRIM(RTRIM(ProductName))                                AS ProductName,\r\n               ISNULL(NULLIF(LTRIM(RTRIM(Category)), N''), N'Unknown')    AS Category,\r\n               ISNULL(NULLIF(LTRIM(RTRIM(SubCategory)), N''), N'Unknown') AS SubCategory,\r\n               CAST(ListPrice    AS DECIMAL(19,4))                      AS ListPrice,\r\n               CAST(StandardCost AS DECIMAL(19,4))                      AS StandardCost,\r\n               IsActive\r\n        FROM SalesOLTP.dbo.Product WITH (NOLOCK)\r\n    ) AS s\r\n    ON t.ProductID = s.ProductID\r\n    WHEN MATCHED AND (t.SKU <> s.SKU OR t.ProductName <> s.ProductName OR t.Category <> s.Category\r\n                      OR t.SubCategory <> s.SubCategory OR t.ListPrice <> s.ListPrice\r\n                      OR t.StandardCost <> s.StandardCost OR t.IsActive <> s.IsActive)\r\n        THEN UPDATE SET SKU = s.SKU, ProductName = s.ProductName, Category = s.Category,\r\n                        SubCategory = s.SubCategory, ListPrice = s.ListPrice,\r\n                        StandardCost = s.StandardCost, IsActive = s.IsActive\r\n    WHEN NOT MATCHED BY TARGET\r\n        THEN INSERT (ProductID, SKU, ProductName, Category, SubCategory, ListPrice, StandardCost, IsActive)\r\n             VALUES (s.ProductID, s.SKU, s.ProductName, s.Category, s.SubCategory, s.ListPrice, s.StandardCost, s.IsActive);\r\n\r\n    SET @RowsAffected = @@ROWCOUNT;\r\nEND;",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DML_MERGE",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 137,
+      "start_line": 11,
+      "start_column": 5,
+      "end_line": 32,
+      "end_column": 124,
+      "target_tables": [
+        "dbo.dimproduct"
+      ],
+      "source_text": "MERGE dbo.DimProduct AS t\r\n    USING (\r\n        SELECT ProductID,\r\n               LTRIM(RTRIM(SKU))                                        AS SKU,\r\n               LTRIM(RTRIM(ProductName))                                AS ProductName,\r\n               ISNULL(NULLIF(LTRIM(RTRIM(Category)), N''), N'Unknown')    AS Category,\r\n               ISNULL(NULLIF(LTRIM(RTRIM(SubCategory)), N''), N'Unknown') AS SubCategory,\r\n               CAST(ListPrice    AS DECIMAL(19,4))                      AS ListPrice,\r\n               CAST(StandardCost AS DECIMAL(19,4))                      AS StandardCost,\r\n               IsActive\r\n        FROM SalesOLTP.dbo.Product WITH (NOLOCK)\r\n    ) AS s\r\n    ON t.ProductID = s.ProductID\r\n    WHEN MATCHED AND (t.SKU <> s.SKU OR t.ProductName <> s.ProductName OR t.Category <> s.Category\r\n                      OR t.SubCategory <> s.SubCategory OR t.ListPrice <> s.ListPrice\r\n                      OR t.StandardCost <> s.StandardCost OR t.IsActive <> s.IsActive)\r\n        THEN UPDATE SET SKU = s.SKU, ProductName = s.ProductName, Category = s.Category,\r\n                        SubCategory = s.SubCategory, ListPrice = s.ListPrice,\r\n                        StandardCost = s.StandardCost, IsActive = s.IsActive\r\n    WHEN NOT MATCHED BY TARGET\r\n        THEN INSERT (ProductID, SKU, ProductName, Category, SubCategory, ListPrice, StandardCost, IsActive)\r\n             VALUES (s.ProductID, s.SKU, s.ProductName, s.Category, s.SubCategory, s.ListPrice, s.StandardCost, s.IsActive)",
+      "parse_failed": false
+    }
+  ]
+}

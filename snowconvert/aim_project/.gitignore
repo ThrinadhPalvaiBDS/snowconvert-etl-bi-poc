@@ -1,0 +1,35 @@
+# Local configuration (not shared with team)
+.scai/config/project.local.yml
+.scai/config/plugin.local.yml
+.scai/config/profiles.local.yaml
+
+# Local Data Exchange Worker config
+.scai/config/dew_configuration.toml
+
+# Environment files
+.env
+.env.local
+
+# Temporary files
+*.tmp
+*.bak
+
+# Midway entry review files (scai code adopt)
+.midway/
+
+# Generated assessment report PDF (sibling of assessment/multi_report.html)
+assessment/*.pdf
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# scai migration plugin: background relay state
+/.scai/monitor/
+
+# Machine-local setup state — not shared with teammates
+.scai/setup-checkpoint.json
+.scai/setup-idempotency.json
+.scai/data-flow.json
+.scai/data-flow.lock
+.scai/.data-flow.json.*.tmp

@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.1",
+  "source_system": "sql",
+  "engine_version": "2.54.0-Pr",
+  "source_file": "defaultdb/dbo/table/dimdate.sql",
+  "source_checksum": "1fe4aa37bbfc183880f8b1152a38c73e941cb1ab1bc99072a84ffaf6bfc854e9",
+  "pairs": [
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlUseStatement",
+      "source_line_start": 1,
+      "source_line_end": 1,
+      "source_text": "USE defaultdb",
+      "targets": [
+        "USE DATABASE <%defaultdb%>"
+      ],
+      "target_file": "defaultdb/dbo/table/dimdate.sql"
+    }
+  ],
+  "nodes": [
+    {
+      "node_type": "DDL_CREATE_TABLE",
+      "depth": 0,
+      "offset": 19,
+      "start_line": 5,
+      "start_column": 0,
+      "end_line": 14,
+      "end_column": 2,
+      "target_tables": [
+        "dbo.dimdate"
+      ],
+      "source_text": "CREATE TABLE dbo.DimDate (\r\n    DateKey         INT PRIMARY KEY,         -- yyyymmdd\r\n    [Date]          DATE NOT NULL,\r\n    [Year]          SMALLINT NOT NULL,\r\n    [Quarter]       TINYINT NOT NULL,\r\n    [Month]         TINYINT NOT NULL,\r\n    MonthName       NVARCHAR(12) NOT NULL,\r\n    DayOfWeek       TINYINT NOT NULL,\r\n    IsWeekend       BIT NOT NULL\r\n)",
+      "parse_failed": false
+    }
+  ]
+}

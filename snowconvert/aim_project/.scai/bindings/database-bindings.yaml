@@ -1,0 +1,10 @@
+source:
+  AIM_DB: AIM_DB
+  defaultdb: defaultdb
+  salesdw: SalesDW
+  salesoltp: SalesOLTP
+snow:
+  AIM_DB: AIM_DB
+  defaultdb: defaultdb
+  salesdw: salesdw
+  salesoltp: salesoltp

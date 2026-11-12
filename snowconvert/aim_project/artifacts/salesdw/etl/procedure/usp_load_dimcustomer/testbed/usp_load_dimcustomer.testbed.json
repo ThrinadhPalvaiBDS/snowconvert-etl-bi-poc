@@ -1,0 +1,387 @@
+{
+  "object": "SalesDW.etl.usp_Load_DimCustomer(INT)",
+  "object_type": "PROCEDURE",
+  "branches": [],
+  "predicates": [
+    {
+      "table": "SalesDW.etl.CountryRegion",
+      "column": "CountryCode",
+      "operator": "=",
+      "values": [
+        "UPPER(NULLIF(LTRIM(RTRIM(c.CountryCode)), ''))"
+      ],
+      "value_kind": "column_expression",
+      "value": {
+        "kind": "fn",
+        "fn": "UPPER",
+        "canonical": "upper",
+        "args": [
+          {
+            "kind": "fn",
+            "fn": "NULLIF",
+            "args": [
+              {
+                "kind": "fn",
+                "fn": "LTRIM",
+                "canonical": "ltrim",
+                "args": [
+                  {
+                    "kind": "fn",
+                    "fn": "RTRIM",
+                    "canonical": "rtrim",
+                    "args": [
+                      {
+                        "kind": "column",
+                        "column": "CountryCode"
+                      }
+                    ]
+                  }
+                ]
+              },
+              {
+                "kind": "literal",
+                "literal": ""
+              }
+            ]
+          }
+        ]
+      },
+      "depends_on": [
+        "CountryCode"
+      ],
+      "operands": [
+        {
+          "kind": "column",
+          "column": "SalesDW.etl.CountryRegion.CountryCode",
+          "text": "cr.CountryCode"
+        },
+        {
+          "kind": "fn",
+          "fn": "UPPER",
+          "canonical": "upper",
+          "args": [
+            {
+              "kind": "fn",
+              "fn": "NULLIF",
+              "args": [
+                {
+                  "kind": "fn",
+                  "fn": "LTRIM",
+                  "canonical": "ltrim",
+                  "args": [
+                    {
+                      "kind": "fn",
+                      "fn": "RTRIM",
+                      "canonical": "rtrim",
+                      "args": [
+                        {
+                          "kind": "column",
+                          "column": "CountryCode"
+                        }
+                      ]
+                    }
+                  ]
+                },
+                {
+                  "kind": "literal",
+                  "literal": ""
+                }
+              ]
+            }
+          ],
+          "text": "UPPER(NULLIF(LTRIM(RTRIM(c.CountryCode)), ''))"
+        }
+      ]
+    },
+    {
+      "table": "tempdb.dbo.#src",
+      "column": "City",
+      "operator": "<>",
+      "values": [
+        "ISNULL(d.City, N'')"
+      ],
+      "value_kind": "column_expression",
+      "value": {
+        "kind": "fn",
+        "fn": "ISNULL",
+        "args": [
+          {
+            "kind": "column",
+            "column": "City"
+          },
+          {
+            "kind": "literal",
+            "literal": ""
+          }
+        ]
+      },
+      "depends_on": [
+        "City"
+      ],
+      "operands": [
+        {
+          "kind": "column",
+          "column": "tempdb.dbo.#src.City",
+          "text": "s.City"
+        },
+        {
+          "kind": "fn",
+          "fn": "ISNULL",
+          "args": [
+            {
+              "kind": "column",
+              "column": "City"
+            },
+            {
+              "kind": "literal",
+              "literal": ""
+            }
+          ],
+          "text": "ISNULL(d.City, N'')"
+        }
+      ]
+    },
+    {
+      "table": "tempdb.dbo.#src",
+      "column": "Country",
+      "operator": "<>",
+      "values": [
+        "ISNULL(d.Country, N'')"
+      ],
+      "value_kind": "column_expression",
+      "value": {
+        "kind": "fn",
+        "fn": "ISNULL",
+        "args": [
+          {
+            "kind": "column",
+            "column": "Country"
+          },
+          {
+            "kind": "literal",
+            "literal": ""
+          }
+        ]
+      },
+      "depends_on": [
+        "Country"
+      ],
+      "operands": [
+        {
+          "kind": "column",
+          "column": "tempdb.dbo.#src.Country",
+          "text": "s.Country"
+        },
+        {
+          "kind": "fn",
+          "fn": "ISNULL",
+          "args": [
+            {
+              "kind": "column",
+              "column": "Country"
+            },
+            {
+              "kind": "literal",
+              "literal": ""
+            }
+          ],
+          "text": "ISNULL(d.Country, N'')"
+        }
+      ]
+    },
+    {
+      "table": "tempdb.dbo.#src",
+      "column": "Email",
+      "operator": "<>",
+      "values": [
+        "ISNULL(d.Email, N'')"
+      ],
+      "value_kind": "column_expression",
+      "value": {
+        "kind": "fn",
+        "fn": "ISNULL",
+        "args": [
+          {
+            "kind": "column",
+            "column": "Email"
+          },
+          {
+            "kind": "literal",
+            "literal": ""
+          }
+        ]
+      },
+      "depends_on": [
+        "Email"
+      ],
+      "operands": [
+        {
+          "kind": "fn",
+          "fn": "ISNULL",
+          "args": [
+            {
+              "kind": "column",
+              "column": "tempdb.dbo.#src.Email"
+            },
+            {
+              "kind": "literal",
+              "literal": ""
+            }
+          ],
+          "text": "ISNULL(s.Email, N'')"
+        },
+        {
+          "kind": "fn",
+          "fn": "ISNULL",
+          "args": [
+            {
+              "kind": "column",
+              "column": "Email"
+            },
+            {
+              "kind": "literal",
+              "literal": ""
+            }
+          ],
+          "text": "ISNULL(d.Email, N'')"
+        }
+      ]
+    },
+    {
+      "table": "tempdb.dbo.#src",
+      "column": "Region",
+      "operator": "<>",
+      "values": [
+        "ISNULL(d.Region, N'')"
+      ],
+      "value_kind": "column_expression",
+      "value": {
+        "kind": "fn",
+        "fn": "ISNULL",
+        "args": [
+          {
+            "kind": "column",
+            "column": "Region"
+          },
+          {
+            "kind": "literal",
+            "literal": ""
+          }
+        ]
+      },
+      "depends_on": [
+        "Region"
+      ],
+      "operands": [
+        {
+          "kind": "column",
+          "column": "tempdb.dbo.#src.Region",
+          "text": "s.Region"
+        },
+        {
+          "kind": "fn",
+          "fn": "ISNULL",
+          "args": [
+            {
+              "kind": "column",
+              "column": "Region"
+            },
+            {
+              "kind": "literal",
+              "literal": ""
+            }
+          ],
+          "text": "ISNULL(d.Region, N'')"
+        }
+      ]
+    },
+    {
+      "table": "tempdb.dbo.#src",
+      "column": "Segment",
+      "operator": "<>",
+      "values": [
+        "ISNULL(d.Segment, N'')"
+      ],
+      "value_kind": "column_expression",
+      "value": {
+        "kind": "fn",
+        "fn": "ISNULL",
+        "args": [
+          {
+            "kind": "column",
+            "column": "Segment"
+          },
+          {
+            "kind": "literal",
+            "literal": ""
+          }
+        ]
+      },
+      "depends_on": [
+        "Segment"
+      ],
+      "operands": [
+        {
+          "kind": "column",
+          "column": "tempdb.dbo.#src.Segment",
+          "text": "s.Segment"
+        },
+        {
+          "kind": "fn",
+          "fn": "ISNULL",
+          "args": [
+            {
+              "kind": "column",
+              "column": "Segment"
+            },
+            {
+              "kind": "literal",
+              "literal": ""
+            }
+          ],
+          "text": "ISNULL(d.Segment, N'')"
+        }
+      ]
+    }
+  ],
+  "edges": [],
+  "assignments": [
+    {
+      "table": "tempdb.dbo.#src",
+      "column": "CustomerCode",
+      "value": "s.CustomerCode"
+    },
+    {
+      "table": "tempdb.dbo.#src",
+      "column": "CustomerName",
+      "value": "s.CustomerName"
+    },
+    {
+      "table": "tempdb.dbo.#src",
+      "column": "Email",
+      "value": "s.Email"
+    }
+  ],
+  "semi_anti": [
+    {
+      "kind": "ANTI",
+      "table": "dbo.DimCustomer",
+      "columns": []
+    }
+  ],
+  "schema_version": 1,
+  "parameters": [
+    {
+      "name": "@RowsAffected",
+      "type": "INT",
+      "param_kind": "business_scalar",
+      "direction": "out",
+      "is_integer": true,
+      "is_number": true,
+      "is_string": false,
+      "is_date": false,
+      "is_boolean": false,
+      "is_binary": false
+    }
+  ]
+}

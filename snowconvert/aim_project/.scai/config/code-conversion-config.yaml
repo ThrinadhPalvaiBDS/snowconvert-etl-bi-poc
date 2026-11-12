@@ -1,0 +1,4 @@
+schema_version: 1.0
+settings:
+  generate-snowflake-bindable-format: True
+  generate-source-bindable-format: True

@@ -1,0 +1,80 @@
+{
+  "schema_version": "1.1",
+  "source_system": "sql",
+  "engine_version": "2.54.0-Pr",
+  "source_file": "salesdw/etl/procedure/usp_logstep.sql",
+  "source_checksum": "cc3e07a6069f0a7bc6cc0826727490d2b33be4f2d56c9795599eb5082a23ebc6",
+  "pairs": [
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlUseStatement",
+      "source_line_start": 1,
+      "source_line_end": 1,
+      "source_text": "USE SalesDW",
+      "targets": [
+        "USE DATABASE <%salesdw%>"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_logstep.sql"
+    },
+    {
+      "pair_kind": "absorbed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 12,
+      "source_line_end": 16,
+      "source_text": "BEGIN\r\n--    SET NOCOUNT ON;\r\n    INSERT etl.LoadLog (RunID, StepName, Status, RowsAffected, ErrorMessage)\r\n    VALUES (@RunID, @StepName, @Status, @RowsAffected, @ErrorMessage);\r\nEND;",
+      "targets": [],
+      "target_file": "salesdw/etl/procedure/usp_logstep.sql"
+    },
+    {
+      "pair_kind": "unsupported",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 13,
+      "source_line_end": 13,
+      "source_text": "--    SET NOCOUNT ON;",
+      "targets": [
+        "--    SET NOCOUNT ON;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_logstep.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 14,
+      "source_line_end": 15,
+      "source_text": "    INSERT etl.LoadLog (RunID, StepName, Status, RowsAffected, ErrorMessage)\r\n    VALUES (@RunID, @StepName, @Status, @RowsAffected, @ErrorMessage);",
+      "targets": [
+        "    INSERT INTO <%salesdw%>.etl.LoadLog (RunID, StepName, Status, RowsAffected, ErrorMessage) VALUES (:RUNID, :STEPNAME, :STATUS, :ROWSAFFECTED, :ERRORMESSAGE);"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_logstep.sql"
+    }
+  ],
+  "nodes": [
+    {
+      "node_type": "DDL_PROCEDURE",
+      "depth": 0,
+      "offset": 18,
+      "start_line": 5,
+      "start_column": 0,
+      "end_line": 16,
+      "end_column": 5,
+      "target_tables": [],
+      "source_text": "CREATE OR ALTER PROCEDURE etl.usp_LogStep\r\n    @RunID        UNIQUEIDENTIFIER,\r\n    @StepName     NVARCHAR(100),\r\n    @Status       NVARCHAR(20),\r\n    @RowsAffected INT            = NULL,\r\n    @ErrorMessage NVARCHAR(4000) = NULL\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    INSERT etl.LoadLog (RunID, StepName, Status, RowsAffected, ErrorMessage)\r\n    VALUES (@RunID, @StepName, @Status, @RowsAffected, @ErrorMessage);\r\nEND;",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DML_INSERT",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 284,
+      "start_line": 14,
+      "start_column": 5,
+      "end_line": 15,
+      "end_column": 70,
+      "target_tables": [
+        "etl.loadlog"
+      ],
+      "source_text": "INSERT etl.LoadLog (RunID, StepName, Status, RowsAffected, ErrorMessage)\r\n    VALUES (@RunID, @StepName, @Status, @RowsAffected, @ErrorMessage)",
+      "parse_failed": false
+    }
+  ]
+}

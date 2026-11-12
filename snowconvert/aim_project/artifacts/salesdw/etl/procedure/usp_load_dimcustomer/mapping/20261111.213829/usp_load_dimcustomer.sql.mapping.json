@@ -1,0 +1,279 @@
+{
+  "schema_version": "1.1",
+  "source_system": "sql",
+  "engine_version": "2.54.0-Pr",
+  "source_file": "salesdw/etl/procedure/usp_load_dimcustomer.sql",
+  "source_checksum": "2726bdc00d2a121092a40639854150a8ad2f40fb5262965e39422357a8b32b3e",
+  "pairs": [
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlUseStatement",
+      "source_line_start": 1,
+      "source_line_end": 1,
+      "source_text": "USE SalesDW",
+      "targets": [
+        "USE DATABASE <%salesdw%>"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimcustomer.sql"
+    },
+    {
+      "pair_kind": "absorbed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 8,
+      "source_line_end": 67,
+      "source_text": "BEGIN\r\n--    SET NOCOUNT ON;\r\n    DECLARE @expired INT, @inserted INT, @type1 INT;\r\n\r\n    SELECT  c.CustomerID,\r\n            LTRIM(RTRIM(c.CustomerCode))                                   AS CustomerCode,\r\n            LTRIM(RTRIM(c.FirstName)) + N' ' + LTRIM(RTRIM(c.LastName))     AS CustomerName,\r\n            LOWER(NULLIF(LTRIM(RTRIM(c.Email)), N''))                       AS Email,\r\n            ISNULL(NULLIF(LTRIM(RTRIM(c.City)), N''), N'Unknown')           AS City,\r\n            ISNULL(cr.Country, N'Unknown')                                  AS Country,\r\n            ISNULL(cr.Region,  N'Unknown')                                  AS Region,\r\n            ISNULL(NULLIF(LTRIM(RTRIM(c.Segment)), N''), N'Unknown')        AS Segment,\r\n            c.ModifiedDate\r\n    INTO    #src\r\n    FROM    SalesOLTP.dbo.Customer c WITH (NOLOCK)\r\n    LEFT JOIN etl.CountryRegion cr\r\n           ON cr.CountryCode = UPPER(NULLIF(LTRIM(RTRIM(c.CountryCode)), ''));\r\n\r\n    BEGIN TRAN;\r\n\r\n    -- Type 2: close the current row when a historical attribute changed\r\n    UPDATE d\r\n    SET    RowEndDate = s.ModifiedDate,\r\n           IsCurrent  = 0\r\n    FROM   dbo.DimCustomer d\r\n    JOIN   #src s ON s.CustomerID = d.CustomerID\r\n    WHERE  d.IsCurrent = 1\r\n      AND (ISNULL(d.City, N'')    <> s.City\r\n        OR ISNULL(d.Country, N'') <> s.Country\r\n        OR ISNULL(d.Region, N'')  <> s.Region\r\n        OR ISNULL(d.Segment, N'') <> s.Segment);\r\n    SET @expired = @@ROWCOUNT;\r\n\r\n    -- New customers, and new versions of the ones just closed\r\n    INSERT dbo.DimCustomer (CustomerID, CustomerCode, CustomerName, Email, City, Country, Region, Segment,\r\n                            RowStartDate, RowEndDate, IsCurrent)\r\n    SELECT s.CustomerID, s.CustomerCode, s.CustomerName, s.Email, s.City, s.Country, s.Region, s.Segment,\r\n           s.ModifiedDate, NULL, 1\r\n    FROM   #src s\r\n    WHERE  NOT EXISTS (SELECT 1 FROM dbo.DimCustomer d WHERE d.CustomerID = s.CustomerID AND d.IsCurrent = 1);\r\n    SET @inserted = @@ROWCOUNT;\r\n\r\n    -- Type 1: overwrite on the current row\r\n    UPDATE d\r\n    SET    CustomerCode = s.CustomerCode,\r\n           CustomerName = s.CustomerName,\r\n           Email        = s.Email\r\n    FROM   dbo.DimCustomer d\r\n    JOIN   #src s ON s.CustomerID = d.CustomerID\r\n    WHERE  d.IsCurrent = 1\r\n      AND (d.CustomerCode <> s.CustomerCode\r\n        OR d.CustomerName <> s.CustomerName\r\n        OR ISNULL(d.Email, N'') <> ISNULL(s.Email, N''));\r\n    SET @type1 = @@ROWCOUNT;\r\n\r\n    COMMIT;\r\n\r\n    SET @RowsAffected = @expired + @inserted + @type1;\r\n    DROP TABLE #src;\r\nEND;",
+      "targets": [],
+      "target_file": "salesdw/etl/procedure/usp_load_dimcustomer.sql"
+    },
+    {
+      "pair_kind": "unsupported",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 9,
+      "source_line_end": 9,
+      "source_text": "--    SET NOCOUNT ON;",
+      "targets": [
+        "--    SET NOCOUNT ON;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimcustomer.sql"
+    },
+    {
+      "pair_kind": "absorbed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 10,
+      "source_line_end": 10,
+      "source_text": "    DECLARE @expired INT, @inserted INT, @type1 INT;",
+      "targets": [],
+      "target_file": "salesdw/etl/procedure/usp_load_dimcustomer.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 12,
+      "source_line_end": 24,
+      "source_text": "\r\n    SELECT  c.CustomerID,\r\n            LTRIM(RTRIM(c.CustomerCode))                                   AS CustomerCode,\r\n            LTRIM(RTRIM(c.FirstName)) + N' ' + LTRIM(RTRIM(c.LastName))     AS CustomerName,\r\n            LOWER(NULLIF(LTRIM(RTRIM(c.Email)), N''))                       AS Email,\r\n            ISNULL(NULLIF(LTRIM(RTRIM(c.City)), N''), N'Unknown')           AS City,\r\n            ISNULL(cr.Country, N'Unknown')                                  AS Country,\r\n            ISNULL(cr.Region,  N'Unknown')                                  AS Region,\r\n            ISNULL(NULLIF(LTRIM(RTRIM(c.Segment)), N''), N'Unknown')        AS Segment,\r\n            c.ModifiedDate\r\n    INTO    #src\r\n    FROM    SalesOLTP.dbo.Customer c WITH (NOLOCK)\r\n    LEFT JOIN etl.CountryRegion cr\r\n           ON cr.CountryCode = UPPER(NULLIF(LTRIM(RTRIM(c.CountryCode)), ''));",
+      "targets": [
+        "CREATE OR REPLACE TEMPORARY TABLE <%salesdw%>.PUBLIC.T_src AS\r\n   SELECT\r\n      c.CustomerID,\r\n      LTRIM(RTRIM(c.CustomerCode))                                   AS CustomerCode,\r\n      LTRIM(RTRIM(c.FirstName)) || ' ' || LTRIM(RTRIM(c.LastName))     AS CustomerName,\r\n      LOWER(NULLIF(LTRIM(RTRIM(c.Email)), ''))                       AS Email,\r\n      NVL(NULLIF(LTRIM(RTRIM(c.City)), ''), 'Unknown')           AS City,\r\n      NVL(cr.Country, 'Unknown')                                  AS Country,\r\n      NVL(cr.Region, 'Unknown')                                  AS Region,\r\n      NVL(NULLIF(LTRIM(RTRIM(c.Segment)), ''), 'Unknown')        AS Segment,\r\n      c.ModifiedDate\r\n      FROM\r\n      <%salesoltp%>.dbo.Customer c\r\n      LEFT JOIN\r\n            <%salesdw%>.etl.CountryRegion cr\r\n             ON cr.CountryCode = UPPER(NULLIF(LTRIM(RTRIM(c.CountryCode)), ''));"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimcustomer.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 26,
+      "source_line_end": 26,
+      "source_text": "\r\n    BEGIN TRAN;",
+      "targets": [
+        "\r\n    BEGIN TRANSACTION;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimcustomer.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 29,
+      "source_line_end": 38,
+      "source_text": "\r\n    -- Type 2: close the current row when a historical attribute changed\r\n    UPDATE d\r\n    SET    RowEndDate = s.ModifiedDate,\r\n           IsCurrent  = 0\r\n    FROM   dbo.DimCustomer d\r\n    JOIN   #src s ON s.CustomerID = d.CustomerID\r\n    WHERE  d.IsCurrent = 1\r\n      AND (ISNULL(d.City, N'')    <> s.City\r\n        OR ISNULL(d.Country, N'') <> s.Country\r\n        OR ISNULL(d.Region, N'')  <> s.Region\r\n        OR ISNULL(d.Segment, N'') <> s.Segment);",
+      "targets": [
+        "\r\n    -- Type 2: close the current row when a historical attribute changed\r\n    UPDATE <%salesdw%>.dbo.DimCustomer d\r\n       SET\r\n          RowEndDate = s.ModifiedDate,\r\n          IsCurrent = 0\r\n      FROM\r\n          <%salesdw%>.PUBLIC.T_src s\r\n      WHERE\r\n          s.CustomerID = d.CustomerID\r\n          AND (d.IsCurrent = 1\r\n          AND (NVL(d.City, '')    <> s.City\r\n            OR NVL(d.Country, '') <> s.Country\r\n            OR NVL(d.Region, '')  <> s.Region\r\n            OR NVL(d.Segment, '') <> s.Segment));"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimcustomer.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 39,
+      "source_line_end": 39,
+      "source_text": "    SET @expired = @@ROWCOUNT;",
+      "targets": [
+        "EXPIRED := SQLROWCOUNT;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimcustomer.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 42,
+      "source_line_end": 47,
+      "source_text": "\r\n    -- New customers, and new versions of the ones just closed\r\n    INSERT dbo.DimCustomer (CustomerID, CustomerCode, CustomerName, Email, City, Country, Region, Segment,\r\n                            RowStartDate, RowEndDate, IsCurrent)\r\n    SELECT s.CustomerID, s.CustomerCode, s.CustomerName, s.Email, s.City, s.Country, s.Region, s.Segment,\r\n           s.ModifiedDate, NULL, 1\r\n    FROM   #src s\r\n    WHERE  NOT EXISTS (SELECT 1 FROM dbo.DimCustomer d WHERE d.CustomerID = s.CustomerID AND d.IsCurrent = 1);",
+      "targets": [
+        "\r\n    -- New customers, and new versions of the ones just closed\r\n    INSERT INTO <%salesdw%>.dbo.DimCustomer (CustomerID, CustomerCode, CustomerName, Email, City, Country, Region, Segment, RowStartDate, RowEndDate, IsCurrent)\r\n    SELECT\r\n       s.CustomerID,\r\n       s.CustomerCode,\r\n       s.CustomerName,\r\n       s.Email,\r\n       s.City,\r\n       s.Country,\r\n       s.Region,\r\n       s.Segment,\r\n       s.ModifiedDate, NULL, 1\r\n    FROM\r\n       <%salesdw%>.PUBLIC.T_src s\r\n    WHERE  NOT EXISTS (SELECT 1 FROM\r\n             <%salesdw%>.dbo.DimCustomer d\r\n          WHERE\r\n             d.CustomerID = s.CustomerID\r\n             AND d.IsCurrent = 1);"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimcustomer.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.AnsiSql.AST.SqlSelect",
+      "source_line_start": 44,
+      "source_line_end": 47,
+      "source_text": "    SELECT s.CustomerID, s.CustomerCode, s.CustomerName, s.Email, s.City, s.Country, s.Region, s.Segment,\r\n           s.ModifiedDate, NULL, 1\r\n    FROM   #src s\r\n    WHERE  NOT EXISTS (SELECT 1 FROM dbo.DimCustomer d WHERE d.CustomerID = s.CustomerID AND d.IsCurrent = 1)",
+      "targets": [
+        "    SELECT\r\n       s.CustomerID,\r\n       s.CustomerCode,\r\n       s.CustomerName,\r\n       s.Email,\r\n       s.City,\r\n       s.Country,\r\n       s.Region,\r\n       s.Segment,\r\n       s.ModifiedDate, NULL, 1\r\n    FROM\r\n       <%salesdw%>.PUBLIC.T_src s\r\n    WHERE  NOT EXISTS (SELECT 1 FROM\r\n             <%salesdw%>.dbo.DimCustomer d\r\n          WHERE\r\n             d.CustomerID = s.CustomerID\r\n             AND d.IsCurrent = 1)"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimcustomer.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.AnsiSql.AST.SqlSelect",
+      "source_line_start": 47,
+      "source_line_end": 47,
+      "source_text": "SELECT 1 FROM dbo.DimCustomer d WHERE d.CustomerID = s.CustomerID AND d.IsCurrent = 1",
+      "targets": [
+        "SELECT 1 FROM\r\n   <%salesdw%>.dbo.DimCustomer d\r\nWHERE\r\n   d.CustomerID = s.CustomerID\r\n   AND d.IsCurrent = 1"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimcustomer.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 48,
+      "source_line_end": 48,
+      "source_text": "    SET @inserted = @@ROWCOUNT;",
+      "targets": [
+        "INSERTED := SQLROWCOUNT;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimcustomer.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 51,
+      "source_line_end": 60,
+      "source_text": "\r\n    -- Type 1: overwrite on the current row\r\n    UPDATE d\r\n    SET    CustomerCode = s.CustomerCode,\r\n           CustomerName = s.CustomerName,\r\n           Email        = s.Email\r\n    FROM   dbo.DimCustomer d\r\n    JOIN   #src s ON s.CustomerID = d.CustomerID\r\n    WHERE  d.IsCurrent = 1\r\n      AND (d.CustomerCode <> s.CustomerCode\r\n        OR d.CustomerName <> s.CustomerName\r\n        OR ISNULL(d.Email, N'') <> ISNULL(s.Email, N''));",
+      "targets": [
+        "\r\n    -- Type 1: overwrite on the current row\r\n    UPDATE <%salesdw%>.dbo.DimCustomer d\r\n       SET\r\n          CustomerCode = s.CustomerCode,\r\n          CustomerName = s.CustomerName,\r\n          Email = s.Email\r\n       FROM\r\n          <%salesdw%>.PUBLIC.T_src s\r\n       WHERE\r\n          s.CustomerID = d.CustomerID\r\n          AND (d.IsCurrent = 1\r\n      AND (d.CustomerCode <> s.CustomerCode\r\n          OR d.CustomerName <> s.CustomerName\r\n          OR NVL(d.Email, '') <> NVL(s.Email, '')));"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimcustomer.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 61,
+      "source_line_end": 61,
+      "source_text": "    SET @type1 = @@ROWCOUNT;",
+      "targets": [
+        "TYPE1 := SQLROWCOUNT;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimcustomer.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 63,
+      "source_line_end": 63,
+      "source_text": "\r\n    COMMIT;",
+      "targets": [
+        "COMMIT;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimcustomer.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 65,
+      "source_line_end": 65,
+      "source_text": "\r\n    SET @RowsAffected = @expired + @inserted + @type1;",
+      "targets": [
+        "ROWSAFFECTED := :EXPIRED + :INSERTED + :TYPE1;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimcustomer.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 66,
+      "source_line_end": 66,
+      "source_text": "    DROP TABLE #src;",
+      "targets": [
+        "DROP TABLE IF EXISTS <%salesdw%>.PUBLIC.T_src;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimcustomer.sql"
+    }
+  ],
+  "nodes": [
+    {
+      "node_type": "DDL_PROCEDURE",
+      "depth": 0,
+      "offset": 18,
+      "start_line": 5,
+      "start_column": 0,
+      "end_line": 67,
+      "end_column": 5,
+      "target_tables": [],
+      "source_text": "CREATE OR ALTER PROCEDURE etl.usp_Load_DimCustomer\r\n    @RowsAffected INT OUTPUT\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    DECLARE @expired INT, @inserted INT, @type1 INT;\r\n\r\n    SELECT  c.CustomerID,\r\n            LTRIM(RTRIM(c.CustomerCode))                                   AS CustomerCode,\r\n            LTRIM(RTRIM(c.FirstName)) + N' ' + LTRIM(RTRIM(c.LastName))     AS CustomerName,\r\n            LOWER(NULLIF(LTRIM(RTRIM(c.Email)), N''))                       AS Email,\r\n            ISNULL(NULLIF(LTRIM(RTRIM(c.City)), N''), N'Unknown')           AS City,\r\n            ISNULL(cr.Country, N'Unknown')                                  AS Country,\r\n            ISNULL(cr.Region,  N'Unknown')                                  AS Region,\r\n            ISNULL(NULLIF(LTRIM(RTRIM(c.Segment)), N''), N'Unknown')        AS Segment,\r\n            c.ModifiedDate\r\n    INTO    #src\r\n    FROM    SalesOLTP.dbo.Customer c WITH (NOLOCK)\r\n    LEFT JOIN etl.CountryRegion cr\r\n           ON cr.CountryCode = UPPER(NULLIF(LTRIM(RTRIM(c.CountryCode)), ''));\r\n\r\n    BEGIN TRAN;\r\n\r\n    -- Type 2: close the current row when a historical attribute changed\r\n    UPDATE d\r\n    SET    RowEndDate = s.ModifiedDate,\r\n           IsCurrent  = 0\r\n    FROM   dbo.DimCustomer d\r\n    JOIN   #src s ON s.CustomerID = d.CustomerID\r\n    WHERE  d.IsCurrent = 1\r\n      AND (ISNULL(d.City, N'')    <> s.City\r\n        OR ISNULL(d.Country, N'') <> s.Country\r\n        OR ISNULL(d.Region, N'')  <> s.Region\r\n        OR ISNULL(d.Segment, N'') <> s.Segment);\r\n    SET @expired = @@ROWCOUNT;\r\n\r\n    -- New customers, and new versions of the ones just closed\r\n    INSERT dbo.DimCustomer (CustomerID, CustomerCode, CustomerName, Email, City, Country, Region, Segment,\r\n                            RowStartDate, RowEndDate, IsCurrent)\r\n    SELECT s.CustomerID, s.CustomerCode, s.CustomerName, s.Email, s.City, s.Country, s.Region, s.Segment,\r\n           s.ModifiedDate, NULL, 1\r\n    FROM   #src s\r\n    WHERE  NOT EXISTS (SELECT 1 FROM dbo.DimCustomer d WHERE d.CustomerID = s.CustomerID AND d.IsCurrent = 1);\r\n    SET @inserted = @@ROWCOUNT;\r\n\r\n    -- Type 1: overwrite on the current row\r\n    UPDATE d\r\n    SET    CustomerCode = s.CustomerCode,\r\n           CustomerName = s.CustomerName,\r\n           Email        = s.Email\r\n    FROM   dbo.DimCustomer d\r\n    JOIN   #src s ON s.CustomerID = d.CustomerID\r\n    WHERE  d.IsCurrent = 1\r\n      AND (d.CustomerCode <> s.CustomerCode\r\n        OR d.CustomerName <> s.CustomerName\r\n        OR ISNULL(d.Email, N'') <> ISNULL(s.Email, N''));\r\n    SET @type1 = @@ROWCOUNT;\r\n\r\n    COMMIT;\r\n\r\n    SET @RowsAffected = @expired + @inserted + @type1;\r\n    DROP TABLE #src;\r\nEND;",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DQL_SELECT",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 192,
+      "start_line": 12,
+      "start_column": 5,
+      "end_line": 24,
+      "end_column": 78,
+      "target_tables": [],
+      "source_text": "SELECT  c.CustomerID,\r\n            LTRIM(RTRIM(c.CustomerCode))                                   AS CustomerCode,\r\n            LTRIM(RTRIM(c.FirstName)) + N' ' + LTRIM(RTRIM(c.LastName))     AS CustomerName,\r\n            LOWER(NULLIF(LTRIM(RTRIM(c.Email)), N''))                       AS Email,\r\n            ISNULL(NULLIF(LTRIM(RTRIM(c.City)), N''), N'Unknown')           AS City,\r\n            ISNULL(cr.Country, N'Unknown')                                  AS Country,\r\n            ISNULL(cr.Region,  N'Unknown')                                  AS Region,\r\n            ISNULL(NULLIF(LTRIM(RTRIM(c.Segment)), N''), N'Unknown')        AS Segment,\r\n            c.ModifiedDate\r\n    INTO    #src\r\n    FROM    SalesOLTP.dbo.Customer c WITH (NOLOCK)\r\n    LEFT JOIN etl.CountryRegion cr\r\n           ON cr.CountryCode = UPPER(NULLIF(LTRIM(RTRIM(c.CountryCode)), ''))",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DML_UPDATE",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 1154,
+      "start_line": 29,
+      "start_column": 5,
+      "end_line": 38,
+      "end_column": 48,
+      "target_tables": [
+        "dbo.dimcustomer"
+      ],
+      "source_text": "UPDATE d\r\n    SET    RowEndDate = s.ModifiedDate,\r\n           IsCurrent  = 0\r\n    FROM   dbo.DimCustomer d\r\n    JOIN   #src s ON s.CustomerID = d.CustomerID\r\n    WHERE  d.IsCurrent = 1\r\n      AND (ISNULL(d.City, N'')    <> s.City\r\n        OR ISNULL(d.Country, N'') <> s.Country\r\n        OR ISNULL(d.Region, N'')  <> s.Region\r\n        OR ISNULL(d.Segment, N'') <> s.Segment)",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DML_INSERT",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 1632,
+      "start_line": 42,
+      "start_column": 5,
+      "end_line": 47,
+      "end_column": 110,
+      "target_tables": [
+        "dbo.dimcustomer"
+      ],
+      "source_text": "INSERT dbo.DimCustomer (CustomerID, CustomerCode, CustomerName, Email, City, Country, Region, Segment,\r\n                            RowStartDate, RowEndDate, IsCurrent)\r\n    SELECT s.CustomerID, s.CustomerCode, s.CustomerName, s.Email, s.City, s.Country, s.Region, s.Segment,\r\n           s.ModifiedDate, NULL, 1\r\n    FROM   #src s\r\n    WHERE  NOT EXISTS (SELECT 1 FROM dbo.DimCustomer d WHERE d.CustomerID = s.CustomerID AND d.IsCurrent = 1)",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DML_UPDATE",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 2160,
+      "start_line": 51,
+      "start_column": 5,
+      "end_line": 60,
+      "end_column": 57,
+      "target_tables": [
+        "dbo.dimcustomer"
+      ],
+      "source_text": "UPDATE d\r\n    SET    CustomerCode = s.CustomerCode,\r\n           CustomerName = s.CustomerName,\r\n           Email        = s.Email\r\n    FROM   dbo.DimCustomer d\r\n    JOIN   #src s ON s.CustomerID = d.CustomerID\r\n    WHERE  d.IsCurrent = 1\r\n      AND (d.CustomerCode <> s.CustomerCode\r\n        OR d.CustomerName <> s.CustomerName\r\n        OR ISNULL(d.Email, N'') <> ISNULL(s.Email, N''))",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DDL_DROP_TABLE",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 2655,
+      "start_line": 66,
+      "start_column": 5,
+      "end_line": 66,
+      "end_column": 20,
+      "target_tables": [
+        "#src"
+      ],
+      "source_text": "DROP TABLE #src",
+      "parse_failed": false
+    }
+  ]
+}

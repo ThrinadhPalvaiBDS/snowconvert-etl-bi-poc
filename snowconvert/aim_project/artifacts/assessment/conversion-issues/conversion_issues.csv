@@ -1,0 +1,197 @@
+Summary,Issue Type,Area,Objects With Only This EWI,Occurrences,Total Partial Objects,Impacted Code Units,Customers,Labels,Labels,Labels,Labels,Description
+[SQL Server][00001] SSC-EWI-TS0089: SET {0} {1} is not supported in Snowflake. - SET XACT_ABORT ON IS NOT SUPPORTED IN SNOWFLAKE.,Bug,Migrations,1,1,1,Procedure,aim_project,agentic-pr-ready,SC-SQL-Support,sql-code-conversion,SQL Server,"h1. Issue Information
+\\ *EWI Code*: SSC-EWI-TS0089
+\\ *Issue Type*: EWI
+\\ *Description*: SET XACT_ABORT ON IS NOT SUPPORTED IN SNOWFLAKE.
+\\ *Occurrences*: 1
+\\ *Object Types*: Procedure
+\\ *Source Language*: SQL Server
+\\ *Engine Version*: 207.2.0
+h1. Problem Description
+\\ The T-SQL session statement `SET XACT_ABORT ON` has no equivalent in Snowflake Scripting, so SnowConvert emits SSC-EWI-TS0089 and comments the statement out. In SQL Server, `SET XACT_ABORT ON` makes the engine abort the whole batch and roll back the entire open transaction whenever a run-time statement raises an error, instead of failing only the offending statement. Snowflake has no such session option: it uses autocommit by default, and inside an explicit `BEGIN TRANSACTION` block a statement error does not by itself roll back the transaction - the transaction stays open until it is explicitly committed or rolled back, or until the session ends. Because the directive is dropped, a procedure such as `etl.usp_Load_SalesDW` that relied on `SET XACT_ABORT ON` for all-or-nothing behaviour loses its automatic rollback-on-error guarantee, so a mid-run failure can leave the target tables (DimDate, DimProduct, DimCustomer, FactSales) partially loaded even though the original procedure would have rolled everything back. The related `IF @@TRANCOUNT > 0 ROLLBACK` in the CATCH block also has no direct Snowflake counterpart and must be reworked together with it.
+h1. Recommended Fix
+{warning}
+*AI-generated recommendation — not a mandatory fix*
+This Recommended Fix was produced by an AI assistant and has not been fully validated. Treat it as a starting hypothesis only: it is not an acceptance criterion and not the only correct remediation. Research is required for this specific issue to confirm the correct fix before implementation.
+{warning}
+\\ Remove the commented-out `SET XACT_ABORT ON` and make the atomic behaviour explicit in Snowflake Scripting: wrap the body of the procedure in `BEGIN TRANSACTION; ... COMMIT;` and add an `EXCEPTION WHEN OTHER THEN ROLLBACK; RAISE;` handler, which reproduces the abort-and-roll-back-everything semantics that `XACT_ABORT ON` provided. For `etl.usp_Load_SalesDW`, replace the T-SQL `BEGIN TRY / BEGIN CATCH ... IF @@TRANCOUNT > 0 ROLLBACK` pattern with:
+
+```sql
+BEGIN
+  BEGIN TRANSACTION;
+  -- load steps: CALL etl.usp_Load_DimDate(...), etl.usp_Load_DimProduct(...), etc.
+  COMMIT;
+EXCEPTION
+  WHEN OTHER THEN
+    ROLLBACK;
+    CALL etl.usp_LogStep(:run_id, :step, 'Failed', NULL, SQLERRM);
+    RAISE;
+END;
+```
+
+Use `ROLLBACK` unconditionally in the handler (Snowflake has no `@@TRANCOUNT`; if a transaction check is needed, read `CURRENT_TRANSACTION()` and roll back only when it is not NULL). Note that nested `BEGIN TRANSACTION` calls in called procedures are flattened into the single outermost transaction in Snowflake, so keep transaction control in this orchestrating procedure and let the child load procedures run without their own COMMIT. Where a step must be logged even after a failure, perform the logging call after `ROLLBACK` so the audit insert is not discarded with the rolled-back work.
+h1. Code Examples
+h2. Original Input Code (SQL Server)
+{noformat}
+USE SalesDW;
+
+GO
+
+CREATE OR ALTER PROCEDURE etl.usp_Load_SalesDW
+AS
+BEGIN
+    SET NOCOUNT ON;
+    SET XACT_ABORT ON;
+
+    DECLARE @RunID UNIQUEIDENTIFIER = NEWID();
+    DECLARE @Step NVARCHAR(100), @Rows INT, @Rejected INT;
+    DECLARE @MinDate DATE, @MaxDate DATE;
+
+    BEGIN TRY
+        SET @Step = N'Package';
+        EXEC etl.usp_LogStep @RunID, @Step, N'Started';
+
+        -- Make sure every order date has a DimDate row
+        SET @Step = N'Load DimDate';
+        SELECT @MinDate = CAST(MIN(OrderDate) AS DATE), @MaxDate = CAST(MAX(OrderDate) AS DATE)
+        FROM SalesOLTP.dbo.SalesOrderHeader WITH (NOLOCK);
+        IF @MinDate IS NOT NULL
+        BEGIN
+            EXEC etl.usp_Load_DimDate @MinDate, @MaxDate, @Rows OUTPUT;
+            EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;
+        END;
+
+        -- Sequence container: dimensions
+        SET @Step = N'DFT - DimProduct';
+        EXEC etl.usp_Load_DimProduct @Rows OUTPUT;
+        EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;
+
+        SET @Step = N'DFT - DimCustomer';
+        EXEC etl.usp_Load_DimCustomer @Rows OUTPUT;
+        EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;
+
+        -- Fact + watermark
+        SET @Step = N'DFT - FactSales';
+        EXEC etl.usp_Load_FactSales @Rows OUTPUT, @Rejected OUTPUT;
+        EXEC etl.usp_LogStep @RunID, @Step, N'Succeeded', @Rows;
+        EXEC etl.usp_LogStep @RunID, N'FactSales rejected rows', N'Succeeded', @Rejected;
+
+        EXEC etl.usp_LogStep @RunID, N'Package', N'Succeeded';
+    END TRY
+    BEGIN CATCH
+        IF @@TRANCOUNT > 0 ROLLBACK;
+
+        DECLARE @Err NVARCHAR(4000) =
+            CONCAT(N'Step ""', @Step, N'"" failed: ', ERROR_MESSAGE(),
+                   N' (error ', ERROR_NUMBER(), N', line ', ERROR_LINE(), N')');
+        EXEC etl.usp_LogStep @RunID, @Step, N'Failed', NULL, @Err;
+
+        -- OnError event handler: Send Mail Task
+        DECLARE @Subject NVARCHAR(255) = CONCAT(N'Load_SalesDW FAILED at ', FORMAT(SYSDATETIME(), 'yyyy-MM-dd HH:mm'));
+        EXEC msdb.dbo.sp_send_dbmail
+             @profile_name = N'DataOps',
+             @recipients   = N'thrinadhp@booleandata.ai',
+             @subject      = @Subject,
+             @body         = @Err;
+
+        THROW;
+    END CATCH;
+END;
+{noformat}
+h2. Converted Code
+{noformat}
+USE DATABASE <%salesdw%>;
+
+--** SSC-FDM-0007 - MISSING DEPENDENT OBJECT ""SalesOLTP.dbo.SalesOrderHeader"" **
+CREATE OR REPLACE PROCEDURE etl.usp_Load_SalesDW ()
+RETURNS VARCHAR
+LANGUAGE SQL
+COMMENT = '{ ""origin"": ""sf_sc"", ""name"": ""snowconvert"", ""version"": {  ""major"": 2,  ""minor"": 54,  ""patch"": ""0-Pr"" }, ""attributes"": {  ""component"": ""transact"",  ""convertedOn"": ""11-11-2026"",  ""domain"": ""no-domain-provided"",  ""migrationid"": ""XsuhASpUt3+avDxmnPT2Mw=="" }}'
+EXECUTE AS CALLER
+AS
+$$
+    DECLARE
+        RUNID VARCHAR;
+        STEP NVARCHAR(100);
+        _ROWS INT;
+        REJECTED INT;
+        MINDATE DATE;
+        MAXDATE DATE;
+        ERR NVARCHAR(4000);
+
+        -- OnError event handler: Send Mail Task
+        SUBJECT NVARCHAR(255);
+    BEGIN
+--        --** SSC-FDM-TS0029 - SET NOCOUNT STATEMENT IS COMMENTED OUT, WHICH IS NOT APPLICABLE IN SNOWFLAKE. **
+--        SET NOCOUNT ON;
+        !!!RESOLVE EWI!!! /*** SSC-EWI-TS0089 - SET XACT_ABORT ON IS NOT SUPPORTED IN SNOWFLAKE. ***/!!!
+        SET XACT_ABORT ON;
+        RUNID := UUID_STRING();
+
+        -- OnError event handler: Send Mail Task
+        BEGIN
+            STEP := 'Package';
+            CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => :STEP, STATUS => 'Started');
+
+            -- Make sure every order date has a DimDate row
+            STEP := 'Load DimDate';
+            LET MINDATE_RESULTSET_1 RESULTSET :=
+            (
+                SELECT
+                    --** SSC-FDM-TS0146 - A SIX-DIGIT DATE SUCH AS '691215' WAS READ WITH SQL SERVER'S DEFAULT TWO-DIGIT YEAR CUTOFF OF 2049, SO IT IS 1969-12-15 RATHER THAN THE 2069-12-15 SNOWFLAKE'S YY FORMAT RETURNS. A CONFIGURED CUTOFF OTHER THAN 2049 CHANGES THE CENTURY. **
+                    COALESCE(TRY_TO_DATE(TRIM(TO_VARCHAR(MIN(OrderDate))), 'YYYYMMDD'), IFF(REGEXP_LIKE(TRIM(TO_VARCHAR(MIN(OrderDate))), '^[0-9]{6}$'), IFF(TRY_TO_NUMBER(LEFT(TRIM(TO_VARCHAR(MIN(OrderDate))), 2)) > 49, TRY_TO_DATE('19' || TRIM(TO_VARCHAR(MIN(OrderDate))), 'YYYYMMDD'), TRY_TO_DATE('20' || TRIM(TO_VARCHAR(MIN(OrderDate))), 'YYYYMMDD')), null), IFF(REGEXP_LIKE(TRIM(TO_VARCHAR(MIN(OrderDate))), '^[0-9]{4}$'), TRY_TO_DATE(TRIM(TO_VARCHAR(MIN(OrderDate))) || '0101', 'YYYYMMDD'), null), IFF(REGEXP_LIKE(TRIM(TO_VARCHAR(MIN(OrderDate))), '^[0-9]+$'), null, TO_DATE(MIN(OrderDate)))) AS MINDATE_VALUE,
+                    --** SSC-FDM-TS0146 - A SIX-DIGIT DATE SUCH AS '691215' WAS READ WITH SQL SERVER'S DEFAULT TWO-DIGIT YEAR CUTOFF OF 2049, SO IT IS 1969-12-15 RATHER THAN THE 2069-12-15 SNOWFLAKE'S YY FORMAT RETURNS. A CONFIGURED CUTOFF OTHER THAN 2049 CHANGES THE CENTURY. **
+                    COALESCE(TRY_TO_DATE(TRIM(TO_VARCHAR(MAX(OrderDate))), 'YYYYMMDD'), IFF(REGEXP_LIKE(TRIM(TO_VARCHAR(MAX(OrderDate))), '^[0-9]{6}$'), IFF(TRY_TO_NUMBER(LEFT(TRIM(TO_VARCHAR(MAX(OrderDate))), 2)) > 49, TRY_TO_DATE('19' || TRIM(TO_VARCHAR(MAX(OrderDate))), 'YYYYMMDD'), TRY_TO_DATE('20' || TRIM(TO_VARCHAR(MAX(OrderDate))), 'YYYYMMDD')), null), IFF(REGEXP_LIKE(TRIM(TO_VARCHAR(MAX(OrderDate))), '^[0-9]{4}$'), TRY_TO_DATE(TRIM(TO_VARCHAR(MAX(OrderDate))) || '0101', 'YYYYMMDD'), null), IFF(REGEXP_LIKE(TRIM(TO_VARCHAR(MAX(OrderDate))), '^[0-9]+$'), null, TO_DATE(MAX(OrderDate)))) AS MAXDATE_VALUE
+                FROM
+                    <%salesoltp%>.dbo.SalesOrderHeader
+            );
+            FOR MINDATE_ROW_1 IN MINDATE_RESULTSET_1 DO
+                MINDATE := MINDATE_ROW_1.MINDATE_VALUE;
+                MAXDATE := MINDATE_ROW_1.MAXDATE_VALUE;
+            END FOR;
+            IF (:MINDATE IS NOT NULL) THEN
+                BEGIN
+                    CALL <%salesdw%>.etl.usp_Load_DimDate(:MINDATE, :MAXDATE, :_ROWS);
+                    CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => :STEP, STATUS => 'Succeeded', ROWSAFFECTED => :_ROWS);
+                END;
+            END IF;
+            -- Sequence container: dimensions
+            STEP := 'DFT - DimProduct';
+            CALL <%salesdw%>.etl.usp_Load_DimProduct(:_ROWS);
+            CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => :STEP, STATUS => 'Succeeded', ROWSAFFECTED => :_ROWS);
+            STEP := 'DFT - DimCustomer';
+            CALL <%salesdw%>.etl.usp_Load_DimCustomer(:_ROWS);
+            CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => :STEP, STATUS => 'Succeeded', ROWSAFFECTED => :_ROWS);
+
+            -- Fact + watermark
+            STEP := 'DFT - FactSales';
+            CALL <%salesdw%>.etl.usp_Load_FactSales(:_ROWS, :REJECTED);
+            CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => :STEP, STATUS => 'Succeeded', ROWSAFFECTED => :_ROWS);
+            CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => 'FactSales rejected rows', STATUS => 'Succeeded', ROWSAFFECTED => :REJECTED);
+            CALL <%salesdw%>.etl.usp_LogStep(RUNID => :RUNID, STEPNAME => 'Package', STATUS => 'Succeeded');
+        EXCEPTION
+            WHEN OTHER THEN
+                IF (CURRENT_TRANSACTION() IS NOT NULL) THEN
+                    BEGIN
+                        ROLLBACK;
+                    EXCEPTION
+                        WHEN OTHER THEN
+                            NULL;
+                    END;
+                END IF;
+                ERR := LEFT(CONCAT('Step ""', COALESCE(:STEP :: STRING, ''), '"" failed: ', COALESCE(:SQLERRM /*** SSC-FDM-TS0023 - ERROR MESSAGE COULD BE DIFFERENT IN SNOWFLAKE ***/ :: STRING, ''), ' (error ', COALESCE(:SQLCODE /*** SSC-FDM-TS0023 - ERROR NUMBER COULD BE DIFFERENT IN SNOWFLAKE ***/ :: STRING, ''), ', line ', '', ')'), 4000);
+                CALL <%salesdw%>.etl.usp_LogStep(:RUNID, :STEP, 'Failed', NULL, :ERR);
+                SUBJECT := CONCAT('Load_SalesDW FAILED at ', COALESCE(TO_CHAR(CURRENT_TIMESTAMP() /*** SSC-FDM-TS0186 - SYSDATETIME() RETURNS THE LOCAL TIME OF THE SQL SERVER HOST; THE CONVERTED CALL FOLLOWS THE SNOWFLAKE SESSION TIMEZONE. SET TIMEZONE TO THE SOURCE SERVER'S ZONE FOR THE USERS THAT RUN THIS CODE ***/, 'YYYY-MM-DD HH24:MI') :: STRING, ''));
+--                --** SSC-FDM-TS0049 - SP_SEND_DBMAIL TRANSLATED TO SNOWFLAKE NOTIFICATION. REQUIRES A NOTIFICATION INTEGRATION TO BE CONFIGURED. **
+--                --** SSC-FDM-TS0052 - SP_SEND_DBMAIL PARAMETERS NOT TRANSLATED: @profile_name. THESE PARAMETERS HAVE NO EQUIVALENT IN SNOWFLAKE SYSTEM$SEND_SNOWFLAKE_NOTIFICATION. **
+--        EXEC msdb.dbo.sp_send_dbmail
+--             @profile_name = N'DataOps',
+--             @recipients   = N'thrinadhp@booleandata.ai',
+--             @subject      = @Subject,
+--             @body         = @Err;
+                CALL SYSTEM$SEND_SNOWFLAKE_NOTIFICATION(SNOWFLAKE.NOTIFICATION.TEXT_PLAIN(:ERR), SNOWFLAKE.NOTIFICATION.EMAIL_INTEGRATION_CONFIG('<your_email_notification_integration>', :SUBJECT, STRTOK_TO_ARRAY('thrinadhp@booleandata.ai', ';')));
+                RAISE;
+        END;
+    END;
+$$;
+{noformat}"

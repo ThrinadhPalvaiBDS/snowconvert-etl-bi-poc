@@ -10,3 +10,8 @@ dbt/.user.yml
 Run at Starting.py
 Run at Starting.py
 dbt/package-lock.yml
+snowconvert/aim_project/logs/
+snowconvert/aim_project/registry/
+snowconvert/aim_project/.scai/conversations/
+snowconvert/aim_project/.scai/tmp/
+snowconvert/aim_project/.scai/object-chat-index.json

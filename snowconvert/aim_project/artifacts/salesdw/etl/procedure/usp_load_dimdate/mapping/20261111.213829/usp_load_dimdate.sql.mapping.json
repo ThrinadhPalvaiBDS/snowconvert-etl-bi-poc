@@ -1,0 +1,207 @@
+{
+  "schema_version": "1.1",
+  "source_system": "sql",
+  "engine_version": "2.54.0-Pr",
+  "source_file": "salesdw/etl/procedure/usp_load_dimdate.sql",
+  "source_checksum": "8e48a166b4f68b8f5d9d4655067beb47a70e8b2af9d3638605f20bae624aa993",
+  "pairs": [
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlUseStatement",
+      "source_line_start": 1,
+      "source_line_end": 1,
+      "source_text": "USE SalesDW",
+      "targets": [
+        "USE DATABASE <%salesdw%>"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimdate.sql"
+    },
+    {
+      "pair_kind": "absorbed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 10,
+      "source_line_end": 33,
+      "source_text": "BEGIN\r\n--    SET NOCOUNT ON;\r\n    SET DATEFIRST 7;                 -- Sunday = 1, so DayOfWeek is stable\r\n    DECLARE @d DATE = @StartDate;\r\n    SET @RowsAdded = 0;\r\n\r\n    WHILE @d <= @EndDate\r\n    BEGIN\r\n        IF NOT EXISTS (SELECT 1 FROM dbo.DimDate WHERE DateKey = CONVERT(INT, CONVERT(CHAR(8), @d, 112)))\r\n        BEGIN\r\n            INSERT dbo.DimDate (DateKey, [Date], [Year], [Quarter], [Month], MonthName, DayOfWeek, IsWeekend)\r\n            VALUES (CONVERT(INT, CONVERT(CHAR(8), @d, 112)),\r\n                    @d,\r\n                    YEAR(@d),\r\n                    DATEPART(QUARTER, @d),\r\n                    MONTH(@d),\r\n                    DATENAME(MONTH, @d),\r\n                    DATEPART(WEEKDAY, @d),\r\n                    CASE WHEN DATEPART(WEEKDAY, @d) IN (1, 7) THEN 1 ELSE 0 END);\r\n            SET @RowsAdded += 1;\r\n        END;\r\n        SET @d = DATEADD(DAY, 1, @d);\r\n    END;\r\nEND;",
+      "targets": [],
+      "target_file": "salesdw/etl/procedure/usp_load_dimdate.sql"
+    },
+    {
+      "pair_kind": "unsupported",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 11,
+      "source_line_end": 11,
+      "source_text": "--    SET NOCOUNT ON;",
+      "targets": [
+        "--    SET NOCOUNT ON;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimdate.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 12,
+      "source_line_end": 12,
+      "source_text": "    SET DATEFIRST 7;                 -- Sunday = 1, so DayOfWeek is stable",
+      "targets": [
+        "ALTER SESSION SET WEEK_START = 7;                 -- Sunday = 1, so DayOfWeek is stable"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimdate.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 13,
+      "source_line_end": 13,
+      "source_text": "    DECLARE @d DATE = @StartDate;",
+      "targets": [
+        "D := :STARTDATE;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimdate.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 14,
+      "source_line_end": 14,
+      "source_text": "    SET @RowsAdded = 0;",
+      "targets": [
+        "ROWSADDED := 0;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimdate.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 16,
+      "source_line_end": 32,
+      "source_text": "\r\n    WHILE @d <= @EndDate\r\n    BEGIN\r\n        IF NOT EXISTS (SELECT 1 FROM dbo.DimDate WHERE DateKey = CONVERT(INT, CONVERT(CHAR(8), @d, 112)))\r\n        BEGIN\r\n            INSERT dbo.DimDate (DateKey, [Date], [Year], [Quarter], [Month], MonthName, DayOfWeek, IsWeekend)\r\n            VALUES (CONVERT(INT, CONVERT(CHAR(8), @d, 112)),\r\n                    @d,\r\n                    YEAR(@d),\r\n                    DATEPART(QUARTER, @d),\r\n                    MONTH(@d),\r\n                    DATENAME(MONTH, @d),\r\n                    DATEPART(WEEKDAY, @d),\r\n                    CASE WHEN DATEPART(WEEKDAY, @d) IN (1, 7) THEN 1 ELSE 0 END);\r\n            SET @RowsAdded += 1;\r\n        END;\r\n        SET @d = DATEADD(DAY, 1, @d);\r\n    END;",
+      "targets": [
+        "WHILE (:D <= :ENDDATE) LOOP\r\n   IF (NOT EXISTS (SELECT 1 FROM\r\n         <%salesdw%>.dbo.DimDate\r\n      WHERE\r\n         DateKey = CAST(LEFT(TO_VARCHAR(:D, 'yyyymmdd'), 8) AS INT)\r\n   )) THEN\r\n      BEGIN\r\n          INSERT INTO <%salesdw%>.dbo.DimDate (DateKey, Date, Year, Quarter, Month, MonthName, DayOfWeek, IsWeekend) VALUES (CAST(LEFT(TO_VARCHAR(:D, 'yyyymmdd'), 8) AS INT), :D, YEAR(:D :: TIMESTAMP), DATE_PART(QUARTER, :D :: TIMESTAMP), MONTH(:D :: TIMESTAMP), TO_CHAR(:D, 'MMMM'), <%AIM_DB%>.PUBLIC.DATE_PART_WEEK_DAY_UDF(:D),\r\n                  CASE WHEN <%AIM_DB%>.PUBLIC.DATE_PART_WEEK_DAY_UDF(:D) IN (1, 7) THEN 1 ELSE 0 END);\r\n          ROWSADDED := ROWSADDED + 1;\r\n      END;\r\n         END IF;\r\n         D := DATEADD(DAY, 1, :D);\r\nEND LOOP;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimdate.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.AnsiSql.AST.SqlSelect",
+      "source_line_start": 18,
+      "source_line_end": 18,
+      "source_text": "SELECT 1 FROM dbo.DimDate WHERE DateKey = CONVERT(INT, CONVERT(CHAR(8), @d, 112))",
+      "targets": [
+        "SELECT 1 FROM\r\n   <%salesdw%>.dbo.DimDate\r\nWHERE\r\n   DateKey = CAST(LEFT(TO_VARCHAR(:D, 'yyyymmdd'), 8) AS INT)"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimdate.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 18,
+      "source_line_end": 30,
+      "source_text": "        IF NOT EXISTS (SELECT 1 FROM dbo.DimDate WHERE DateKey = CONVERT(INT, CONVERT(CHAR(8), @d, 112)))\r\n        BEGIN\r\n            INSERT dbo.DimDate (DateKey, [Date], [Year], [Quarter], [Month], MonthName, DayOfWeek, IsWeekend)\r\n            VALUES (CONVERT(INT, CONVERT(CHAR(8), @d, 112)),\r\n                    @d,\r\n                    YEAR(@d),\r\n                    DATEPART(QUARTER, @d),\r\n                    MONTH(@d),\r\n                    DATENAME(MONTH, @d),\r\n                    DATEPART(WEEKDAY, @d),\r\n                    CASE WHEN DATEPART(WEEKDAY, @d) IN (1, 7) THEN 1 ELSE 0 END);\r\n            SET @RowsAdded += 1;\r\n        END;",
+      "targets": [
+        "IF (NOT EXISTS (SELECT 1 FROM\r\n      <%salesdw%>.dbo.DimDate\r\n   WHERE\r\n      DateKey = CAST(LEFT(TO_VARCHAR(:D, 'yyyymmdd'), 8) AS INT)\r\n)) THEN\r\n   BEGIN\r\n       INSERT INTO <%salesdw%>.dbo.DimDate (DateKey, Date, Year, Quarter, Month, MonthName, DayOfWeek, IsWeekend) VALUES (CAST(LEFT(TO_VARCHAR(:D, 'yyyymmdd'), 8) AS INT), :D, YEAR(:D :: TIMESTAMP), DATE_PART(QUARTER, :D :: TIMESTAMP), MONTH(:D :: TIMESTAMP), TO_CHAR(:D, 'MMMM'), <%AIM_DB%>.PUBLIC.DATE_PART_WEEK_DAY_UDF(:D),\r\n               CASE WHEN <%AIM_DB%>.PUBLIC.DATE_PART_WEEK_DAY_UDF(:D) IN (1, 7) THEN 1 ELSE 0 END);\r\n       ROWSADDED := ROWSADDED + 1;\r\n   END;\r\n      END IF;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimdate.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 19,
+      "source_line_end": 30,
+      "source_text": "        BEGIN\r\n            INSERT dbo.DimDate (DateKey, [Date], [Year], [Quarter], [Month], MonthName, DayOfWeek, IsWeekend)\r\n            VALUES (CONVERT(INT, CONVERT(CHAR(8), @d, 112)),\r\n                    @d,\r\n                    YEAR(@d),\r\n                    DATEPART(QUARTER, @d),\r\n                    MONTH(@d),\r\n                    DATENAME(MONTH, @d),\r\n                    DATEPART(WEEKDAY, @d),\r\n                    CASE WHEN DATEPART(WEEKDAY, @d) IN (1, 7) THEN 1 ELSE 0 END);\r\n            SET @RowsAdded += 1;\r\n        END;",
+      "targets": [
+        "        BEGIN\r\n            INSERT INTO <%salesdw%>.dbo.DimDate (DateKey, Date, Year, Quarter, Month, MonthName, DayOfWeek, IsWeekend) VALUES (CAST(LEFT(TO_VARCHAR(:D, 'yyyymmdd'), 8) AS INT), :D, YEAR(:D :: TIMESTAMP), DATE_PART(QUARTER, :D :: TIMESTAMP), MONTH(:D :: TIMESTAMP), TO_CHAR(:D, 'MMMM'), <%AIM_DB%>.PUBLIC.DATE_PART_WEEK_DAY_UDF(:D),\r\n                    CASE WHEN <%AIM_DB%>.PUBLIC.DATE_PART_WEEK_DAY_UDF(:D) IN (1, 7) THEN 1 ELSE 0 END);\r\n            ROWSADDED := ROWSADDED + 1;\r\n        END;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimdate.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 20,
+      "source_line_end": 28,
+      "source_text": "            INSERT dbo.DimDate (DateKey, [Date], [Year], [Quarter], [Month], MonthName, DayOfWeek, IsWeekend)\r\n            VALUES (CONVERT(INT, CONVERT(CHAR(8), @d, 112)),\r\n                    @d,\r\n                    YEAR(@d),\r\n                    DATEPART(QUARTER, @d),\r\n                    MONTH(@d),\r\n                    DATENAME(MONTH, @d),\r\n                    DATEPART(WEEKDAY, @d),\r\n                    CASE WHEN DATEPART(WEEKDAY, @d) IN (1, 7) THEN 1 ELSE 0 END);",
+      "targets": [
+        "            INSERT INTO <%salesdw%>.dbo.DimDate (DateKey, Date, Year, Quarter, Month, MonthName, DayOfWeek, IsWeekend) VALUES (CAST(LEFT(TO_VARCHAR(:D, 'yyyymmdd'), 8) AS INT), :D, YEAR(:D :: TIMESTAMP), DATE_PART(QUARTER, :D :: TIMESTAMP), MONTH(:D :: TIMESTAMP), TO_CHAR(:D, 'MMMM'), <%AIM_DB%>.PUBLIC.DATE_PART_WEEK_DAY_UDF(:D),\r\n                    CASE WHEN <%AIM_DB%>.PUBLIC.DATE_PART_WEEK_DAY_UDF(:D) IN (1, 7) THEN 1 ELSE 0 END);"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimdate.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 29,
+      "source_line_end": 29,
+      "source_text": "            SET @RowsAdded += 1;",
+      "targets": [
+        "ROWSADDED := ROWSADDED + 1;"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimdate.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 31,
+      "source_line_end": 31,
+      "source_text": "        SET @d = DATEADD(DAY, 1, @d);",
+      "targets": [
+        "D := DATEADD(DAY, 1, :D);"
+      ],
+      "target_file": "salesdw/etl/procedure/usp_load_dimdate.sql"
+    }
+  ],
+  "nodes": [
+    {
+      "node_type": "DDL_PROCEDURE",
+      "depth": 0,
+      "offset": 18,
+      "start_line": 5,
+      "start_column": 0,
+      "end_line": 33,
+      "end_column": 5,
+      "target_tables": [],
+      "source_text": "CREATE OR ALTER PROCEDURE etl.usp_Load_DimDate\r\n    @StartDate DATE,\r\n    @EndDate   DATE,\r\n    @RowsAdded INT OUTPUT\r\nAS\r\nBEGIN\r\n    SET NOCOUNT ON;\r\n    SET DATEFIRST 7;                 -- Sunday = 1, so DayOfWeek is stable\r\n    DECLARE @d DATE = @StartDate;\r\n    SET @RowsAdded = 0;\r\n\r\n    WHILE @d <= @EndDate\r\n    BEGIN\r\n        IF NOT EXISTS (SELECT 1 FROM dbo.DimDate WHERE DateKey = CONVERT(INT, CONVERT(CHAR(8), @d, 112)))\r\n        BEGIN\r\n            INSERT dbo.DimDate (DateKey, [Date], [Year], [Quarter], [Month], MonthName, DayOfWeek, IsWeekend)\r\n            VALUES (CONVERT(INT, CONVERT(CHAR(8), @d, 112)),\r\n                    @d,\r\n                    YEAR(@d),\r\n                    DATEPART(QUARTER, @d),\r\n                    MONTH(@d),\r\n                    DATENAME(MONTH, @d),\r\n                    DATEPART(WEEKDAY, @d),\r\n                    CASE WHEN DATEPART(WEEKDAY, @d) IN (1, 7) THEN 1 ELSE 0 END);\r\n            SET @RowsAdded += 1;\r\n        END;\r\n        SET @d = DATEADD(DAY, 1, @d);\r\n    END;\r\nEND;",
+      "parse_failed": false
+    },
+    {
+      "node_type": "LOOP_BODY",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 311,
+      "start_line": 16,
+      "start_column": 5,
+      "end_line": 32,
+      "end_column": 8,
+      "predicate": "@d <= @EndDate",
+      "target_tables": [],
+      "source_text": "WHILE @d <= @EndDate\r\n    BEGIN\r\n        IF NOT EXISTS (SELECT 1 FROM dbo.DimDate WHERE DateKey = CONVERT(INT, CONVERT(CHAR(8), @d, 112)))\r\n        BEGIN\r\n            INSERT dbo.DimDate (DateKey, [Date], [Year], [Quarter], [Month], MonthName, DayOfWeek, IsWeekend)\r\n            VALUES (CONVERT(INT, CONVERT(CHAR(8), @d, 112)),\r\n                    @d,\r\n                    YEAR(@d),\r\n                    DATEPART(QUARTER, @d),\r\n                    MONTH(@d),\r\n                    DATENAME(MONTH, @d),\r\n                    DATEPART(WEEKDAY, @d),\r\n                    CASE WHEN DATEPART(WEEKDAY, @d) IN (1, 7) THEN 1 ELSE 0 END);\r\n            SET @RowsAdded += 1;\r\n        END;\r\n        SET @d = DATEADD(DAY, 1, @d);\r\n    END",
+      "parse_failed": false
+    },
+    {
+      "node_type": "IF_THEN",
+      "parent_index": 1,
+      "depth": 2,
+      "offset": 352,
+      "start_line": 18,
+      "start_column": 9,
+      "end_line": 30,
+      "end_column": 13,
+      "predicate": "NOT EXISTS (SELECT 1 FROM dbo.DimDate WHERE DateKey = CONVERT(INT, CONVERT(CHAR(8), @d, 112)))",
+      "target_tables": [],
+      "source_text": "IF NOT EXISTS (SELECT 1 FROM dbo.DimDate WHERE DateKey = CONVERT(INT, CONVERT(CHAR(8), @d, 112)))\r\n        BEGIN\r\n            INSERT dbo.DimDate (DateKey, [Date], [Year], [Quarter], [Month], MonthName, DayOfWeek, IsWeekend)\r\n            VALUES (CONVERT(INT, CONVERT(CHAR(8), @d, 112)),\r\n                    @d,\r\n                    YEAR(@d),\r\n                    DATEPART(QUARTER, @d),\r\n                    MONTH(@d),\r\n                    DATENAME(MONTH, @d),\r\n                    DATEPART(WEEKDAY, @d),\r\n                    CASE WHEN DATEPART(WEEKDAY, @d) IN (1, 7) THEN 1 ELSE 0 END);\r\n            SET @RowsAdded += 1;\r\n        END;",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DML_INSERT",
+      "parent_index": 2,
+      "depth": 3,
+      "offset": 478,
+      "start_line": 20,
+      "start_column": 13,
+      "end_line": 28,
+      "end_column": 81,
+      "target_tables": [
+        "dbo.dimdate"
+      ],
+      "source_text": "INSERT dbo.DimDate (DateKey, [Date], [Year], [Quarter], [Month], MonthName, DayOfWeek, IsWeekend)\r\n            VALUES (CONVERT(INT, CONVERT(CHAR(8), @d, 112)),\r\n                    @d,\r\n                    YEAR(@d),\r\n                    DATEPART(QUARTER, @d),\r\n                    MONTH(@d),\r\n                    DATENAME(MONTH, @d),\r\n                    DATEPART(WEEKDAY, @d),\r\n                    CASE WHEN DATEPART(WEEKDAY, @d) IN (1, 7) THEN 1 ELSE 0 END)",
+      "parse_failed": false
+    }
+  ]
+}

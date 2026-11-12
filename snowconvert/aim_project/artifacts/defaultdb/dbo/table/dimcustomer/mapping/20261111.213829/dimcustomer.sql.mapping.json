@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.1",
+  "source_system": "sql",
+  "engine_version": "2.54.0-Pr",
+  "source_file": "defaultdb/dbo/table/dimcustomer.sql",
+  "source_checksum": "7e4e30f41b8701e1608c23b85d2ed167a42983f349355dc192fde7f8dde47ce7",
+  "pairs": [
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlUseStatement",
+      "source_line_start": 1,
+      "source_line_end": 1,
+      "source_text": "USE defaultdb",
+      "targets": [
+        "USE DATABASE <%defaultdb%>"
+      ],
+      "target_file": "defaultdb/dbo/table/dimcustomer.sql"
+    }
+  ],
+  "nodes": [
+    {
+      "node_type": "DDL_CREATE_TABLE",
+      "depth": 0,
+      "offset": 19,
+      "start_line": 5,
+      "start_column": 0,
+      "end_line": 18,
+      "end_column": 2,
+      "target_tables": [
+        "dbo.dimcustomer"
+      ],
+      "source_text": "CREATE TABLE dbo.DimCustomer (\r\n    CustomerKey     INT IDENTITY(1,1) PRIMARY KEY,\r\n    CustomerID      INT           NOT NULL,\r\n    CustomerCode    NVARCHAR(20)  NOT NULL,\r\n    CustomerName    NVARCHAR(101) NOT NULL,\r\n    Email           NVARCHAR(255) NULL,\r\n    City            NVARCHAR(100) NULL,\r\n    Country         NVARCHAR(100) NULL,\r\n    Region          NVARCHAR(50)  NULL,\r\n    Segment         NVARCHAR(20)  NULL,\r\n    RowStartDate    DATETIME2(3)  NOT NULL,\r\n    RowEndDate      DATETIME2(3)  NULL,\r\n    IsCurrent       BIT           NOT NULL\r\n)",
+      "parse_failed": false
+    }
+  ]
+}

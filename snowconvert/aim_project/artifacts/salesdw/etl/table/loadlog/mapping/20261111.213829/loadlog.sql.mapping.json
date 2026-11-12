@@ -1,0 +1,70 @@
+{
+  "schema_version": "1.1",
+  "source_system": "sql",
+  "engine_version": "2.54.0-Pr",
+  "source_file": "salesdw/etl/table/loadlog.sql",
+  "source_checksum": "08c57262ce2ff0e781804af1084864af56291fb7c2ccbf45674cef758eee4681",
+  "pairs": [
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlUseStatement",
+      "source_line_start": 1,
+      "source_line_end": 1,
+      "source_text": "USE SalesDW",
+      "targets": [
+        "USE DATABASE <%salesdw%>"
+      ],
+      "target_file": "salesdw/etl/table/loadlog.sql"
+    },
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.AnsiSql.AST.SqlBaseIf",
+      "source_line_start": 5,
+      "source_line_end": 14,
+      "source_text": "\r\nIF OBJECT_ID('etl.LoadLog') IS NULL\r\nCREATE TABLE etl.LoadLog (\r\n    LoadLogID     INT IDENTITY(1,1) PRIMARY KEY,\r\n    RunID         UNIQUEIDENTIFIER NOT NULL,\r\n    StepName      NVARCHAR(100)    NOT NULL,\r\n    Status        NVARCHAR(20)     NOT NULL,   -- Started / Succeeded / Failed\r\n    RowsAffected  INT              NULL,\r\n    ErrorMessage  NVARCHAR(4000)   NULL,\r\n    LoggedAt      DATETIME2(3)     NOT NULL DEFAULT SYSDATETIME()\r\n);",
+      "targets": [
+        "-- Started / Succeeded / Failed\r\nCREATE TABLE IF NOT EXISTS etl.LoadLog (\r\n   LoadLogID INT IDENTITY(1,1) ORDER PRIMARY KEY,\r\n   RunID VARCHAR NOT NULL,\r\n   StepName NVARCHAR(100) NOT NULL,\r\n   Status NVARCHAR(20) NOT NULL,\r\n   RowsAffected INT NULL,\r\n   ErrorMessage NVARCHAR(4000) NULL,\r\n   LoggedAt TIMESTAMP_NTZ(3) NOT NULL DEFAULT CURRENT_TIMESTAMP() :: TIMESTAMP_NTZ(3)\r\n)\r\nCOMMENT = '{ \"origin\": \"sf_sc\", \"name\": \"snowconvert\", \"version\": {  \"major\": 2,  \"minor\": 54,  \"patch\": \"0-Pr\" }, \"attributes\": {  \"component\": \"transact\",  \"convertedOn\": \"11-11-2026\",  \"domain\": \"no-domain-provided\",  \"migrationid\": \"XsuhASpUt3+avDxmnPT2Mw==\" }}'"
+      ],
+      "target_file": "salesdw/etl/table/loadlog.sql"
+    },
+    {
+      "pair_kind": "absorbed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlStat",
+      "source_line_start": 6,
+      "source_line_end": 14,
+      "source_text": "CREATE TABLE etl.LoadLog (\r\n    LoadLogID     INT IDENTITY(1,1) PRIMARY KEY,\r\n    RunID         UNIQUEIDENTIFIER NOT NULL,\r\n    StepName      NVARCHAR(100)    NOT NULL,\r\n    Status        NVARCHAR(20)     NOT NULL,   -- Started / Succeeded / Failed\r\n    RowsAffected  INT              NULL,\r\n    ErrorMessage  NVARCHAR(4000)   NULL,\r\n    LoggedAt      DATETIME2(3)     NOT NULL DEFAULT SYSDATETIME()\r\n);",
+      "targets": [],
+      "target_file": "salesdw/etl/table/loadlog.sql"
+    }
+  ],
+  "nodes": [
+    {
+      "node_type": "IF_THEN",
+      "depth": 0,
+      "offset": 18,
+      "start_line": 5,
+      "start_column": 0,
+      "end_line": 14,
+      "end_column": 3,
+      "predicate": "OBJECT_ID('etl.LoadLog') IS NULL",
+      "target_tables": [],
+      "source_text": "IF OBJECT_ID('etl.LoadLog') IS NULL\r\nCREATE TABLE etl.LoadLog (\r\n    LoadLogID     INT IDENTITY(1,1) PRIMARY KEY,\r\n    RunID         UNIQUEIDENTIFIER NOT NULL,\r\n    StepName      NVARCHAR(100)    NOT NULL,\r\n    Status        NVARCHAR(20)     NOT NULL,   -- Started / Succeeded / Failed\r\n    RowsAffected  INT              NULL,\r\n    ErrorMessage  NVARCHAR(4000)   NULL,\r\n    LoggedAt      DATETIME2(3)     NOT NULL DEFAULT SYSDATETIME()\r\n);",
+      "parse_failed": false
+    },
+    {
+      "node_type": "DDL_CREATE_TABLE",
+      "parent_index": 0,
+      "depth": 1,
+      "offset": 55,
+      "start_line": 6,
+      "start_column": 1,
+      "end_line": 14,
+      "end_column": 2,
+      "target_tables": [
+        "etl.loadlog"
+      ],
+      "source_text": "CREATE TABLE etl.LoadLog (\r\n    LoadLogID     INT IDENTITY(1,1) PRIMARY KEY,\r\n    RunID         UNIQUEIDENTIFIER NOT NULL,\r\n    StepName      NVARCHAR(100)    NOT NULL,\r\n    Status        NVARCHAR(20)     NOT NULL,   -- Started / Succeeded / Failed\r\n    RowsAffected  INT              NULL,\r\n    ErrorMessage  NVARCHAR(4000)   NULL,\r\n    LoggedAt      DATETIME2(3)     NOT NULL DEFAULT SYSDATETIME()\r\n)",
+      "parse_failed": false
+    }
+  ]
+}

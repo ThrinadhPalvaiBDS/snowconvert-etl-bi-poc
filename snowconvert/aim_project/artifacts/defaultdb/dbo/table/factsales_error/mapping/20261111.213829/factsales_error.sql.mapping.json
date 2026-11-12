@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.1",
+  "source_system": "sql",
+  "engine_version": "2.54.0-Pr",
+  "source_file": "defaultdb/dbo/table/factsales_error.sql",
+  "source_checksum": "c29a55afbb914cd6b47aa8f5da72104280303164e3541217696128fb8b65bfb2",
+  "pairs": [
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlUseStatement",
+      "source_line_start": 1,
+      "source_line_end": 1,
+      "source_text": "USE defaultdb",
+      "targets": [
+        "USE DATABASE <%defaultdb%>"
+      ],
+      "target_file": "defaultdb/dbo/table/factsales_error.sql"
+    }
+  ],
+  "nodes": [
+    {
+      "node_type": "DDL_CREATE_TABLE",
+      "depth": 0,
+      "offset": 19,
+      "start_line": 5,
+      "start_column": 0,
+      "end_line": 7,
+      "end_column": 2,
+      "target_tables": [
+        "dbo.factsales_error"
+      ],
+      "source_text": "CREATE TABLE dbo.FactSales_Error (\r\n    SalesOrderDetailID INT, ErrorReason NVARCHAR(200), LoadDate DATETIME2(3)\r\n)",
+      "parse_failed": false
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+USE defaultdb
+
+GO
+
+CREATE TABLE dbo.DimProduct (
+    ProductKey      INT IDENTITY(1,1) PRIMARY KEY,
+    ProductID       INT           NOT NULL,
+    SKU             NVARCHAR(30)  NOT NULL,
+    ProductName     NVARCHAR(200) NOT NULL,
+    Category        NVARCHAR(50)  NOT NULL,
+    SubCategory     NVARCHAR(50)  NOT NULL,
+    ListPrice       DECIMAL(19,4) NOT NULL,
+    StandardCost    DECIMAL(19,4) NOT NULL,
+    IsActive        BIT           NOT NULL
+);

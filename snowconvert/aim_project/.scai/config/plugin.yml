@@ -1,0 +1,190 @@
+assessment_conversion_issues: yes
+assessment_name: SalesDW_ETL_BI_POC_Assessment
+assessment_options: none
+code_source: local
+dashboard_port: 7879
+entry_mode: fresh
+has_etl_code: 'false'
+has_power_bi: 'false'
+has_tableau: 'false'
+migration_extras: none
+pending_git_main_branch: main
+project_dir_confirmed: 'true'
+tailor_conversion_settings: 'true'
+tasks:
+  applyRules:
+    enabled: true
+  captureBaseline:
+    enabled: true
+    locked: true
+  chooseCodeSource:
+    enabled: true
+  chooseConversionSettings:
+    enabled: true
+  chooseEntryMode:
+    enabled: true
+  chooseEtlFlow:
+    enabled: true
+  chooseExtractionStrategyAzureSynapse:
+    enabled: true
+  chooseExtractionStrategyBigquery:
+    enabled: true
+  chooseExtractionStrategyDb2:
+    enabled: true
+  chooseExtractionStrategyOracle:
+    enabled: true
+  chooseExtractionStrategyPostgresql:
+    enabled: true
+  chooseExtractionStrategyRedshift:
+    enabled: true
+  chooseExtractionStrategyRedshiftIceberg:
+    enabled: true
+  chooseExtractionStrategyRouter:
+    enabled: true
+  chooseExtractionStrategySqlServer:
+    enabled: true
+  chooseExtractionStrategySqlServerIceberg:
+    enabled: true
+  chooseExtractionStrategyTeradata:
+    enabled: true
+  chooseExtractionStrategyTeradataIceberg:
+    enabled: true
+  chooseIcebergLoadMode:
+    enabled: true
+  chooseIcebergSpec:
+    enabled: true
+  chooseIncrementalSyncRouter:
+    enabled: true
+  chooseMigrationExtras:
+    enabled: true
+  chooseMigrationType:
+    enabled: true
+  chooseRerunStrategy:
+    enabled: true
+  chooseRerunStrategyRouter:
+    enabled: true
+  chooseRunMode:
+    enabled: true
+  chooseSourceDialect:
+    enabled: true
+  chooseSyncStrategy:
+    enabled: true
+  chooseSyncStrategyOracle:
+    enabled: true
+  chooseTargetTableType:
+    enabled: true
+  chooseTargetTableTypeRouter:
+    enabled: true
+  chooseTestingPath:
+    enabled: true
+  chooseValidationType:
+    enabled: true
+  configureExtractionSource:
+    enabled: true
+  configureGit:
+    enabled: true
+    locked: true
+  configureSandboxProfile:
+    enabled: true
+    locked: true
+  configureSnowflakeTarget:
+    enabled: true
+    locked: true
+  configureTesting:
+    enabled: true
+  confirmProjectDir:
+    enabled: true
+    locked: true
+  convert:
+    enabled: true
+    locked: true
+  convertCode:
+    enabled: true
+    locked: true
+  createIsolatedSandbox:
+    enabled: true
+  createTests:
+    enabled: true
+  dataStrategy:
+    enabled: true
+  dbtOrchestrator:
+    enabled: true
+  dbtRepoint:
+    enabled: true
+    locked: true
+  dbtSetup:
+    enabled: true
+    locked: true
+  deploy:
+    enabled: true
+    locked: true
+  deployCommonSandbox:
+    enabled: true
+  detectDbt:
+    enabled: true
+  enableDataMigration:
+    enabled: true
+  enableGit:
+    enabled: true
+  enrichTestbed:
+    enabled: true
+  etlSeed:
+    enabled: true
+  etlStabilization:
+    enabled: true
+    locked: true
+  etlValidate:
+    enabled: true
+  extractRules:
+    enabled: true
+  fixCode:
+    enabled: true
+    locked: true
+  generateTestbed:
+    enabled: true
+  midwayEntry:
+    enabled: true
+    locked: true
+  migrateData:
+    enabled: true
+  recommendSafeTools:
+    enabled: false
+  registerCode:
+    enabled: true
+    locked: true
+  registration:
+    enabled: true
+    locked: true
+  runAssessment:
+    enabled: true
+  runTests:
+    enabled: true
+  seedScript:
+    enabled: true
+  seedSourceDb:
+    enabled: true
+  seedSynthetic:
+    enabled: true
+    locked: true
+  setupComplete:
+    enabled: true
+  setupDataInfrastructure:
+    enabled: true
+  validateData:
+    enabled: true
+  validateEmptyDir:
+    enabled: true
+    locked: true
+  validateEtlRepair:
+    enabled: true
+  validateEtlResolveScripts:
+    enabled: true
+  validateEtlSeed:
+    enabled: true
+  validateEtlValidate:
+    enabled: true
+  validateView:
+    enabled: true
+  verify:
+    enabled: true
+wave: '1'

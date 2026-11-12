@@ -1,0 +1,36 @@
+{
+  "schema_version": "1.1",
+  "source_system": "sql",
+  "engine_version": "2.54.0-Pr",
+  "source_file": "defaultdb/dbo/table/factsales.sql",
+  "source_checksum": "3e1640dec5fb51159359ee793c7c56fffa5658762a865d3cc6b46f1b2a000c5c",
+  "pairs": [
+    {
+      "pair_kind": "transformed",
+      "source_kind": "Mobilize.Transact.Sql.Ast.TSqlUseStatement",
+      "source_line_start": 1,
+      "source_line_end": 1,
+      "source_text": "USE defaultdb",
+      "targets": [
+        "USE DATABASE <%defaultdb%>"
+      ],
+      "target_file": "defaultdb/dbo/table/factsales.sql"
+    }
+  ],
+  "nodes": [
+    {
+      "node_type": "DDL_CREATE_TABLE",
+      "depth": 0,
+      "offset": 19,
+      "start_line": 5,
+      "start_column": 0,
+      "end_line": 20,
+      "end_column": 2,
+      "target_tables": [
+        "dbo.factsales"
+      ],
+      "source_text": "CREATE TABLE dbo.FactSales (\r\n    SalesOrderDetailID INT PRIMARY KEY,\r\n    OrderNumber     NVARCHAR(25)  NOT NULL,\r\n    OrderDateKey    INT           NOT NULL,\r\n    CustomerKey     INT           NOT NULL,\r\n    ProductKey      INT           NOT NULL,\r\n    Channel         NVARCHAR(20)  NOT NULL,\r\n    OrderStatus     NVARCHAR(20)  NOT NULL,\r\n    Quantity        INT           NOT NULL,\r\n    UnitPrice       DECIMAL(19,4) NOT NULL,\r\n    DiscountAmount  DECIMAL(19,4) NOT NULL,\r\n    SalesAmount     DECIMAL(19,4) NOT NULL,\r\n    CostAmount      DECIMAL(19,4) NOT NULL,\r\n    MarginAmount    DECIMAL(19,4) NOT NULL,\r\n    LoadDate        DATETIME2(3)  NOT NULL\r\n)",
+      "parse_failed": false
+    }
+  ]
+}

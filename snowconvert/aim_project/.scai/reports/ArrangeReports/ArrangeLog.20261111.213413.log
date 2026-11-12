@@ -1,0 +1,80 @@
+[11-11-2026 21:34:13] Info: ========================================
+[11-11-2026 21:34:13] Info: Starting Arrange-Only Mode
+[11-11-2026 21:34:13] Info: ========================================
+[11-11-2026 21:34:13] Info: Input Path: C:\Users\Thrinadh Palvai\Downloads\files\snowconvert-etl-bi-poc\snowconvert\aim_project\artifacts\source_raw\20261111.160412
+[11-11-2026 21:34:13] Info: Output Path: C:\Users\Thrinadh Palvai\Downloads\files\snowconvert-etl-bi-poc\snowconvert\aim_project\artifacts\source_raw\20261111.160412_Processed
+[11-11-2026 21:34:13] Info: Source Language: Transact
+[11-11-2026 21:34:13] Info: ========================================
+[11-11-2026 21:34:22] Info: Preprocessing Code: STARTED
+[11-11-2026 21:34:22] Info: Executing 'SQL Split TLO Task'
+[11-11-2026 21:34:22] Info: Preprocessing file 02_DimDate.sql
+[11-11-2026 21:34:22] Info: Preprocessing file 02_FactSales.sql
+[11-11-2026 21:34:22] Info: Preprocessing file 01_oltp_source_ddl.sql
+[11-11-2026 21:34:22] Info: Preprocessing file 02_DimCustomer.sql
+[11-11-2026 21:34:22] Info: Preprocessing file 02_DimProduct.sql
+[11-11-2026 21:34:22] Info: Preprocessing file 02_FactSales_Error.sql
+[11-11-2026 21:34:22] Info: Preprocessing file 02_vw_SalesByMonth.sql
+[11-11-2026 21:34:22] Info: Preprocessing file 05_legacy_etl_procedures.sql
+[11-11-2026 21:34:22] Info: Splitting DimDate table: STARTED
+[11-11-2026 21:34:22] Info: Splitting FactSales table: STARTED
+[11-11-2026 21:34:22] Info: Splitting FactSales_Error table: STARTED
+[11-11-2026 21:34:22] Info: Splitting Customer table: STARTED
+[11-11-2026 21:34:22] Info: Splitting DimProduct table: STARTED
+[11-11-2026 21:34:22] Info: Splitting DimCustomer table: STARTED
+[11-11-2026 21:34:22] Info: Splitting vw_SalesByMonth view: STARTED
+[11-11-2026 21:34:22] Info: Splitting Product table: STARTED
+[11-11-2026 21:34:22] Info: Splitting SalesOrderHeader table: STARTED
+[11-11-2026 21:34:22] Info: Splitting SalesOrderDetail table: STARTED
+[11-11-2026 21:34:22] Info: Splitting 05_legacy_etl_procedures unknown_type: STARTED
+[11-11-2026 21:34:22] Info: Splitting Watermark table: STARTED
+[11-11-2026 21:34:22] Info: Splitting 05_legacy_etl_procedures unknown_type: STARTED
+[11-11-2026 21:34:22] Info: Splitting LoadLog table: STARTED
+[11-11-2026 21:34:22] Info: Splitting CountryRegion table: STARTED
+[11-11-2026 21:34:22] Info: Splitting 05_legacy_etl_procedures unknown_type: STARTED
+[11-11-2026 21:34:22] Info: Splitting 05_legacy_etl_procedures unknown_type: STARTED
+[11-11-2026 21:34:22] Info: Splitting usp_LogStep procedure: STARTED
+[11-11-2026 21:34:22] Info: Splitting usp_Load_DimDate procedure: STARTED
+[11-11-2026 21:34:22] Info: Splitting usp_Load_DimProduct procedure: STARTED
+[11-11-2026 21:34:22] Info: Splitting usp_Load_DimCustomer procedure: STARTED
+[11-11-2026 21:34:22] Info: Splitting usp_Load_FactSales procedure: STARTED
+[11-11-2026 21:34:22] Info: Splitting usp_Load_SalesDW procedure: STARTED
+[11-11-2026 21:34:22] Info: Splitting vw_SalesByMonth view: DONE
+[11-11-2026 21:34:22] Info: Splitting 05_legacy_etl_procedures unknown_type: DONE
+[11-11-2026 21:34:22] Info: Splitting CountryRegion table: DONE
+[11-11-2026 21:34:22] Info: Splitting Watermark table: DONE
+[11-11-2026 21:34:22] Info: Splitting 05_legacy_etl_procedures unknown_type: DONE
+[11-11-2026 21:34:22] Info: Splitting usp_Load_SalesDW procedure: DONE
+[11-11-2026 21:34:22] Info: Splitting DimCustomer table: DONE
+[11-11-2026 21:34:22] Info: Splitting DimProduct table: DONE
+[11-11-2026 21:34:22] Info: Splitting FactSales table: DONE
+[11-11-2026 21:34:22] Info: Splitting usp_Load_FactSales procedure: DONE
+[11-11-2026 21:34:22] Info: Splitting usp_Load_DimProduct procedure: DONE
+[11-11-2026 21:34:22] Info: Splitting FactSales_Error table: DONE
+[11-11-2026 21:34:22] Info: Splitting usp_Load_DimDate procedure: DONE
+[11-11-2026 21:34:22] Info: Splitting 05_legacy_etl_procedures unknown_type: DONE
+[11-11-2026 21:34:22] Info: Splitting usp_LogStep procedure: DONE
+[11-11-2026 21:34:22] Info: Splitting 05_legacy_etl_procedures unknown_type: DONE
+[11-11-2026 21:34:22] Info: Splitting LoadLog table: DONE
+[11-11-2026 21:34:22] Info: Splitting usp_Load_DimCustomer procedure: DONE
+[11-11-2026 21:34:22] Info: Splitting SalesOrderDetail table: DONE
+[11-11-2026 21:34:22] Info: Splitting SalesOrderHeader table: DONE
+[11-11-2026 21:34:22] Info: Splitting Product table: DONE
+[11-11-2026 21:34:22] Info: Splitting Customer table: DONE
+[11-11-2026 21:34:22] Info: Splitting DimDate table: DONE
+[11-11-2026 21:34:22] Warning: ========================================
+[11-11-2026 21:34:22] Warning: 10 database-less object(s) were encountered and will be treated as if they belong to the 'defaultdb' database.
+[11-11-2026 21:34:22] Warning: ========================================
+[11-11-2026 21:34:22] Info: ========================================
+[11-11-2026 21:34:22] Info: Arrange Summary
+[11-11-2026 21:34:22] Info: ========================================
+[11-11-2026 21:34:22] Info: Identified 23 object(s) across 4 type(s):
+[11-11-2026 21:34:22] Info:   - table: 12
+[11-11-2026 21:34:22] Info:   - procedure: 6
+[11-11-2026 21:34:22] Info:   - unknown_type: 4
+[11-11-2026 21:34:22] Info:   - view: 1
+[11-11-2026 21:34:22] Info: ========================================
+[11-11-2026 21:34:22] Info: Preprocessing Code: COMPLETED
+[11-11-2026 21:34:22] Info: ========================================
+[11-11-2026 21:34:22] Info: Arrange-Only Mode Completed Successfully
+[11-11-2026 21:34:22] Info: Arranged code available at: C:\Users\Thrinadh Palvai\Downloads\files\snowconvert-etl-bi-poc\snowconvert\aim_project\artifacts\source_raw\20261111.160412_Processed
+[11-11-2026 21:34:22] Info: ========================================
